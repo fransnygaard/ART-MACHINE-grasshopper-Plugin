@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Grasshopper.Kernel;
 using Rhino.Geometry;
 
-namespace G_Code_Generator
+namespace ART_MACHINE
 {
     public class PaperOutlineComponent : GH_Component
     {
@@ -103,7 +103,6 @@ namespace G_Code_Generator
                         default:
                             AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Paper Type not found, remember to capitolize letter. e.g A4 not a4");
                         return;
-                            break;
                     }
 
                 

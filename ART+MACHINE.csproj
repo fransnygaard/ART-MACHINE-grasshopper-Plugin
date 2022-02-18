@@ -8,8 +8,8 @@
     <ProjectGuid>{AE875172-B5CD-4B86-9060-7223EF0C239C}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>G_Code_Generator</RootNamespace>
-    <AssemblyName>G-Code Generator</AssemblyName>
+    <RootNamespace>ART_MACHINE</RootNamespace>
+    <AssemblyName>ART+MACHINE</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <IsWebBootstrapper>false</IsWebBootstrapper>
@@ -19,7 +19,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\..\..\AppData\Roaming\Grasshopper\Libraries\myDevFolder\</OutputPath>
+    <OutputPath>..\..\..\..\AppData\Roaming\Grasshopper\Libraries\myDevFolder\ART_MACHINE_v04\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>

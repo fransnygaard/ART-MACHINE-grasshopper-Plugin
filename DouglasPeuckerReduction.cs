@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace G_Code_Generator
+namespace ART_MACHINE
 {
     /// <summary>
     /// Uses the Douglas Peucker algorithm to reduce the number of points.

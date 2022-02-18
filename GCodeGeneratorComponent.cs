@@ -9,7 +9,7 @@ using Rhino.Geometry;
 // folder in Grasshopper.
 // You can use the _GrasshopperDeveloperSettings Rhino command for that.
 
-namespace G_Code_Generator
+namespace ART_MACHINE
 {
     public class GCodeGeneratorComponent : GH_Component
     {

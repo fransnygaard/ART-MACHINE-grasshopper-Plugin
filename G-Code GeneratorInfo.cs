@@ -2,7 +2,7 @@
 using System.Drawing;
 using Grasshopper.Kernel;
 
-namespace G_Code_Generator
+namespace ART_MACHINE
 {
     public class G_Code_GeneratorInfo : GH_AssemblyInfo
   {
