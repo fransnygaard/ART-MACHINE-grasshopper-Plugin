@@ -10,7 +10,7 @@ namespace ART_MACHINE
     {
         get
         {
-            return "GCodeGenerator";
+            return "ART+MACHINE supportPlugin for grasshopper";
         }
     }
     public override Bitmap Icon
@@ -26,7 +26,7 @@ namespace ART_MACHINE
         get
         {
             //Return a short string describing the purpose of this GHA library.
-            return "";
+            return "ART+MACHINE supportPlugin for grasshopper";
         }
     }
     public override Guid Id
@@ -42,7 +42,7 @@ namespace ART_MACHINE
         get
         {
             //Return a string identifying you or your company.
-            return "";
+            return "Frans Nygaard";
         }
     }
     public override string AuthorContact
@@ -50,7 +50,7 @@ namespace ART_MACHINE
         get
         {
             //Return a string representing your preferred contact details.
-            return "";
+            return "frans@fransnygaard.com";
         }
     }
 }

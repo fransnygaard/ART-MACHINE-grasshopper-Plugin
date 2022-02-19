@@ -21,7 +21,7 @@ namespace ART_MACHINE
         /// new tabs/panels will automatically be created.
         /// </summary>
         public GCodeGeneratorComponent()
-          : base("ART+MACHINE: G-Code Generator", "G-Code Generator",
+          : base("ART+++MACHINE: G-Code Generator", "G-Code Generator",
               "Description",
               "ART+MACHINE", "Gcode-Generator")
         {
@@ -40,8 +40,8 @@ namespace ART_MACHINE
             pManager.AddNumberParameter("PenLiftHeigt", "Lift", "The lift distance to lift pen", GH_ParamAccess.item,3.0f);
             pManager.AddIntegerParameter("FeedRate Z", "F_Z", "The feedrate in Z", GH_ParamAccess.item, 1000);
             pManager.AddNumberParameter("PenLiftTolerance", "T", "Tolerance for lifting pen between lines.", GH_ParamAccess.item, 0.1);
-            pManager.AddBooleanParameter("ArcSupport", "A", "Set to true if controller have support for arc (G2/G3)", GH_ParamAccess.item, false);
-            pManager.AddBooleanParameter("BezierSupport(BETA)", "B", "Set to true if controller have support for bezier (G5)", GH_ParamAccess.item, false);
+            pManager.AddBooleanParameter("ArcSupport(BETA)", "A", "Set to true if controller have support for arc (G2/G3)", GH_ParamAccess.item, false);
+            pManager.AddBooleanParameter("BezierSupport(NOT READY)", "B", "Set to true if controller have support for bezier (G5)", GH_ParamAccess.item, false);
             pManager.AddBooleanParameter("Sort Lines", "S", "True sorts the lines to minimize pen up movemnets, False draws them in the default order", GH_ParamAccess.item, true);
 
 
@@ -69,7 +69,7 @@ namespace ART_MACHINE
 
             List<Rhino.Geometry.Point3d> debug = new List<Point3d>();
             List<String> debugStr = new List<string>();
-            debugStr.Add("v 0.4.02");
+            debugStr.Add("v0.4.03");
 
             //SET THIS AS INPUTS LATER
             Double simplifyTolerance = 2 ;
@@ -107,46 +107,59 @@ namespace ART_MACHINE
 
             //sort shapes
             //implement laters
-
+            Polyline pline;
             //add to shapesList
             List<Shape2D> shapesToDraw = new List<Shape2D>();
             debugStr.Add("Identifying shapes....");
             foreach (Rhino.Geometry.Curve c in inCrv)
             {
+                
                 if (c == null)
                 {
                     break;
                 }
 
 
-                else if (c.IsArc() && arcSupport)
+                else if (c.IsArc() && arcSupport && true &&c.TryGetArc(out _))
                 {
                     debugStr.Add("   Found Arc");
                     Rhino.Geometry.Point3d[] _tempArray = new Rhino.Geometry.Point3d[2] { c.PointAtNormalizedLength(0), c.PointAtNormalizedLength(1) };
+                    
                     Shape2D new_shape2d = new Shape2D(_tempArray, Shape2D.Shape2DTypes.arc, c);
                     shapesToDraw.Add(new_shape2d);
                 }
 
-                //    else if (c.IsPolyline())
-                //    {
-                //        debugStr.Add("   Found Polyline");
+                else if (c.IsLinear() && true)
+                {
+                    debugStr.Add("   Found Linear");
+                    Rhino.Geometry.Point3d[] _tempArray = new Rhino.Geometry.Point3d[2] { c.PointAtNormalizedLength(0), c.PointAtNormalizedLength(1) };
+                    Shape2D new_shape2d = new Shape2D(_tempArray, Shape2D.Shape2DTypes.line, c);
+                    shapesToDraw.Add(new_shape2d);
+                }
 
-                //        //Rhino.Geometry.Point3d[] _tempArray = new Rhino.Geometry.Point3d[2] { c.PointAtNormalizedLength(0), c.PointAtNormalizedLength(1) };
-                //        Rhino.Geometry.Point3d[] _tempArray = (Rhino.Geometry.Polyline)c.
-                //        Shape2D new_shape2d = new Shape2D(_tempArray, Shape2D.Shape2DTypes.polyline, c);
-                //        shapesToDraw.Add(new_shape2d);
-                //    }
-                //    else if (c.IsLinear())
-                //    {
-                //        debugStr.Add("   Found Linear");
-                //        Rhino.Geometry.Point3d[] _tempArray = new Rhino.Geometry.Point3d[2] { c.PointAtNormalizedLength(0), c.PointAtNormalizedLength(1) };
-                //        Shape2D new_shape2d = new Shape2D(_tempArray, Shape2D.Shape2DTypes.line, c);
-                //        shapesToDraw.Add(new_shape2d);
-                //    }
+                else if (c.IsPolyline() && c.TryGetPolyline(out pline) && true)
+                {
+                    debugStr.Add("   Found Polyline");
+                    List<Point2d> _tempList = new List<Point2d>();
+                    for (int i = 0; i < pline.Count; i++)
+                    {
+                        _tempList.Add(new Point2d(pline[i].X,pline[i].Y));
+                    }
+                    
+                    //Rhino.Geometry.Point3d[] _tempArray = new Rhino.Geometry.Point3d[2] { c.PointAtNormalizedLength(0), c.PointAtNormalizedLength(1) };
+                    Shape2D new_shape2d = new Shape2D(_tempList.ToArray(), Shape2D.Shape2DTypes.polyline, c);
+                    shapesToDraw.Add(new_shape2d);
+                }
+
+                else if(bezierSupport && false)
+                {
+
+                }
 
                 else
                 {
 
+                    debugStr.Add("   CURVE FOUND   No bezier support - UsingDouglasPeuckerReduction");
 
                     Rhino.Geometry.Point3d[] _tempArray;
                     var _ = c.DivideByLength(divideDistance, true, out _tempArray);
@@ -307,8 +320,20 @@ namespace ART_MACHINE
                     Rhino.Geometry.ArcCurve arccurve = (Rhino.Geometry.ArcCurve)shapesToDraw[indexOfNextShape].curve;
                     Rhino.Geometry.Arc arc;
                     arccurve.TryGetArc(out arc);
-                    gcode.AddArcMove(new Rhino.Geometry.Point2d(arc.Center.X,arc.Center.Y), pointsToDraw[0], pointsToDraw[1], lift);
 
+
+                    Point2d midpoint = new Point2d();
+                    if (nextReverse)
+                        midpoint = new Point2d(arc.PointAt(0.1).X, arc.PointAt(0.1).Y);
+                    else
+                        midpoint = new Point2d(arc.PointAt(1-0.1).X, arc.PointAt(1- 0.1).Y);
+
+                    if (nextReverse)
+                       arc.Reverse();
+
+
+                        gcode.AddArcMove(new Rhino.Geometry.Point2d(arc.Center.X,arc.Center.Y),midpoint, pointsToDraw[0], pointsToDraw[1],arc, lift);
+                   
                 }
                 else if (shapesToDraw[indexOfNextShape].type == Shape2D.Shape2DTypes.bezier)
                 {

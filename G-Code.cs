@@ -284,8 +284,27 @@ namespace ART_MACHINE
 
         }
 
-        public void AddArcMove(Rhino.Geometry.Point2d centerPoint, Rhino.Geometry.Point2d startPoint, Rhino.Geometry.Point2d endPoint,bool penLift = true)
+        public void AddArcMove(Rhino.Geometry.Point2d centerPoint, Rhino.Geometry.Point2d midpoint, Rhino.Geometry.Point2d startPoint, Rhino.Geometry.Point2d endPoint, Rhino.Geometry.Arc arc,bool penLift = true)
         {
+
+            //Check if arc is drawn cw or ccw
+           double angle =  Rhino.Geometry.Vector3d.VectorAngle(
+                new Rhino.Geometry.Vector3d(arc.PointAt(0).X - centerPoint.X, arc.PointAt(0).Y - centerPoint.Y, 0),
+                new Rhino.Geometry.Vector3d(arc.PointAt(0.1).X - centerPoint.X, arc.PointAt(0.1).Y - centerPoint.Y, 0),
+                Rhino.Geometry.Plane.WorldXY);
+                
+            int arcCode = -1;
+            
+
+            if (angle < Math.PI)
+                {
+                arcCode = 2; //G2 for ccw
+
+            }
+            else
+            {
+                arcCode = 3; //G3 for cw
+            }
 
             if (penLift)
             {
@@ -294,7 +313,7 @@ namespace ART_MACHINE
 
             lines.Add(new G_Code_Line(
                 "(Drawing ARC with center " + centerPoint.ToString() +
-                "from " + startPoint.ToString() +
+                " from " + startPoint.ToString() +
                 " to " + endPoint.ToString() +
                 ")")); // Comments
 
@@ -305,12 +324,24 @@ namespace ART_MACHINE
 
             LowerPen();
 
-            G_Code_Line g_Code_Line = new G_Code_Line((int)3); //G3 - Arc or Circle Move
-            g_Code_Line.AddParameter("X", startPoint.X);
-            g_Code_Line.AddParameter("Y", startPoint.Y);
-            g_Code_Line.AddParameter("I", centerPoint.X - startPoint.X);
-            g_Code_Line.AddParameter("J", centerPoint.Y - startPoint.Y);
+            //G_Code_Line g_Code_Line = new G_Code_Line(arcCode); //G3 - Arc or Circle Move
+            //g_Code_Line.AddParameter("X", endPoint.X);
+            //g_Code_Line.AddParameter("Y", endPoint.Y);
+            //g_Code_Line.AddParameter("I", centerPoint.X - startPoint.X);
+            //g_Code_Line.AddParameter("J", centerPoint.Y - startPoint.Y);
+            //g_Code_Line.AddParameter("F", feedRateDOWN);
+
+            G_Code_Line g_Code_Line = new G_Code_Line(arcCode); //G3/G2- Arc or Circle Move
+            g_Code_Line.AddParameter("X", endPoint.X);
+            g_Code_Line.AddParameter("Y", endPoint.Y);
+            g_Code_Line.AddParameter("R", startPoint.DistanceTo(centerPoint));
             g_Code_Line.AddParameter("F", feedRateDOWN);
+
+            
+
+          //  toolPath.Add(new Rhino.Geometry.Point3d(endPoint.X ,endPoint.Y, IsLifted ? penLiftHeight : penZeroZ));
+
+
 
 
             lines.Add(g_Code_Line);
