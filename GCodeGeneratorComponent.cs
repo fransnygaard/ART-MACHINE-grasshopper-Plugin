@@ -21,9 +21,9 @@ namespace ART_MACHINE
         /// new tabs/panels will automatically be created.
         /// </summary>
         public GCodeGeneratorComponent()
-          : base("ART+++MACHINE: G-Code Generator", "G-Code Generator",
+          : base("ART+MACHINE: G-Code CURVES", "G-Code CURVES",
               "Description",
-              "ART+MACHINE", "Gcode-Generator")
+              "ART+MACHINE", "Gcode")
         {
         }
 
@@ -35,9 +35,9 @@ namespace ART_MACHINE
 
             pManager.AddCurveParameter("Curve", "Crv", "Input curve", GH_ParamAccess.list);
             pManager.AddNumberParameter("LineRegenTolerance", "T", "Tolerance curve->lines", GH_ParamAccess.item, 0.1);
-            pManager.AddIntegerParameter("FeedratePenDown", "F_down", "The feedrate in XY when the pen i down", GH_ParamAccess.item,5000);
-            pManager.AddIntegerParameter("FeedratePenUp", "F_up", "The feedrate in XY when the pen i up", GH_ParamAccess.item,8000);
-            pManager.AddNumberParameter("PenLiftHeigt", "Lift", "The lift distance to lift pen", GH_ParamAccess.item,3.0f);
+            pManager.AddIntegerParameter("FeedratePenDown", "F_down", "The feedrate in XY when the pen i down", GH_ParamAccess.item, 5000);
+            pManager.AddIntegerParameter("FeedratePenUp", "F_up", "The feedrate in XY when the pen i up", GH_ParamAccess.item, 8000);
+            pManager.AddNumberParameter("PenLiftHeigt", "Lift", "The lift distance to lift pen", GH_ParamAccess.item, 3.0f);
             pManager.AddIntegerParameter("FeedRate Z", "F_Z", "The feedrate in Z", GH_ParamAccess.item, 1000);
             pManager.AddNumberParameter("PenLiftTolerance", "T", "Tolerance for lifting pen between lines.", GH_ParamAccess.item, 0.1);
             pManager.AddBooleanParameter("ArcSupport(BETA)", "A", "Set to true if controller have support for arc (G2/G3)", GH_ParamAccess.item, false);
@@ -69,11 +69,11 @@ namespace ART_MACHINE
 
             List<Rhino.Geometry.Point3d> debug = new List<Point3d>();
             List<String> debugStr = new List<string>();
-            debugStr.Add("v0.4.03");
+            
 
-            //SET THIS AS INPUTS LATER
-            Double simplifyTolerance = 2 ;
-            Double divideDistance = simplifyTolerance/ 2;
+            //INPUTS
+            Double simplifyTolerance = 2;
+            Double divideDistance = simplifyTolerance / 2;
             Double penLiftHeight = 2;
             Double penLiftTolerance = 0.1;
             int feedRateUP = 1000;
@@ -113,18 +113,18 @@ namespace ART_MACHINE
             debugStr.Add("Identifying shapes....");
             foreach (Rhino.Geometry.Curve c in inCrv)
             {
-                
+
                 if (c == null)
                 {
                     break;
                 }
 
 
-                else if (c.IsArc() && arcSupport && true &&c.TryGetArc(out _))
+                else if (c.IsArc() && arcSupport && true && c.TryGetArc(out _))
                 {
                     debugStr.Add("   Found Arc");
                     Rhino.Geometry.Point3d[] _tempArray = new Rhino.Geometry.Point3d[2] { c.PointAtNormalizedLength(0), c.PointAtNormalizedLength(1) };
-                    
+
                     Shape2D new_shape2d = new Shape2D(_tempArray, Shape2D.Shape2DTypes.arc, c);
                     shapesToDraw.Add(new_shape2d);
                 }
@@ -143,15 +143,15 @@ namespace ART_MACHINE
                     List<Point2d> _tempList = new List<Point2d>();
                     for (int i = 0; i < pline.Count; i++)
                     {
-                        _tempList.Add(new Point2d(pline[i].X,pline[i].Y));
+                        _tempList.Add(new Point2d(pline[i].X, pline[i].Y));
                     }
-                    
+
                     //Rhino.Geometry.Point3d[] _tempArray = new Rhino.Geometry.Point3d[2] { c.PointAtNormalizedLength(0), c.PointAtNormalizedLength(1) };
                     Shape2D new_shape2d = new Shape2D(_tempList.ToArray(), Shape2D.Shape2DTypes.polyline, c);
                     shapesToDraw.Add(new_shape2d);
                 }
 
-                else if(bezierSupport && false)
+                else if (bezierSupport && false)
                 {
 
                 }
@@ -226,7 +226,7 @@ namespace ART_MACHINE
 
 
             //Make a G code obj
-            G_Code gcode = new G_Code(feedRateUP,feedRateDOWN, feedRateZ, penLiftHeight, 0);
+            G_Code gcode = new G_Code(feedRateUP, feedRateDOWN, feedRateZ, penLiftHeight, 0);
 
             //variable to hold last point , start at 0,0,0;
             Rhino.Geometry.Point2d lastPoint = new Point2d(0, 0);
@@ -244,7 +244,7 @@ namespace ART_MACHINE
                 distanceToNextPoint = Double.MaxValue; //Reset search distace
 
 
-                if(sortLines)
+                if (sortLines)
                 {
 
                     //Search for closest point
@@ -274,7 +274,7 @@ namespace ART_MACHINE
                             indexOfNextShape = shapesToDraw.IndexOf(s);
                         }
 
-                        if(distanceToNextPoint == 0)
+                        if (distanceToNextPoint == 0)
                             break;
                     }
                 }
@@ -282,11 +282,11 @@ namespace ART_MACHINE
                 {
                     nextReverse = false;
                     indexOfNextShape = 0;
-                    distanceToNextPoint  = lastPoint.DistanceTo(shapesToDraw[0].startPoint());
+                    distanceToNextPoint = lastPoint.DistanceTo(shapesToDraw[0].startPoint());
                 }
 
-                if(sortLines)
-                    debugStr.Add("adding closest shape at index [" + indexOfNextShape  +"] distance " + distanceToNextPoint);
+                if (sortLines)
+                    debugStr.Add("adding closest shape at index [" + indexOfNextShape + "] distance " + distanceToNextPoint);
                 else
                     debugStr.Add("adding next shape at index [" + indexOfNextShape + "] distance " + distanceToNextPoint);
 
@@ -311,7 +311,7 @@ namespace ART_MACHINE
                     gcode.AddNextLineSegment(pointsToDraw, lift);
 
                 }
-                else if(shapesToDraw[indexOfNextShape].type == Shape2D.Shape2DTypes.arc)
+                else if (shapesToDraw[indexOfNextShape].type == Shape2D.Shape2DTypes.arc)
                 {
                     debugStr.Add("      adding arcMove");
 
@@ -326,14 +326,14 @@ namespace ART_MACHINE
                     if (nextReverse)
                         midpoint = new Point2d(arc.PointAt(0.1).X, arc.PointAt(0.1).Y);
                     else
-                        midpoint = new Point2d(arc.PointAt(1-0.1).X, arc.PointAt(1- 0.1).Y);
+                        midpoint = new Point2d(arc.PointAt(1 - 0.1).X, arc.PointAt(1 - 0.1).Y);
 
                     if (nextReverse)
-                       arc.Reverse();
+                        arc.Reverse();
 
 
-                        gcode.AddArcMove(new Rhino.Geometry.Point2d(arc.Center.X,arc.Center.Y),midpoint, pointsToDraw[0], pointsToDraw[1],arc, lift);
-                   
+                    gcode.AddArcMove(new Rhino.Geometry.Point2d(arc.Center.X, arc.Center.Y), midpoint, pointsToDraw[0], pointsToDraw[1], arc, lift);
+
                 }
                 else if (shapesToDraw[indexOfNextShape].type == Shape2D.Shape2DTypes.bezier)
                 {
@@ -341,7 +341,7 @@ namespace ART_MACHINE
 
                     List<Point2d> pointsToDraw = shapesToDraw[indexOfNextShape].getPointList(nextReverse);
                     lastPoint = pointsToDraw[pointsToDraw.Count - 1];
-                    gcode.AddBezierMove(pointsToDraw,lift);
+                    gcode.AddBezierMove(pointsToDraw, lift);
 
                 }
 

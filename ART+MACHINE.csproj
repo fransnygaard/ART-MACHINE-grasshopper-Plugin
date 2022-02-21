@@ -54,6 +54,7 @@
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DotDrawingGcodeGeneratorComponent.cs" />
     <Compile Include="DouglasPeuckerReduction.cs" />
     <Compile Include="G-Code.cs" />
     <Compile Include="GCodeGeneratorComponent.cs" />

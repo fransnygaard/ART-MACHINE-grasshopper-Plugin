@@ -67,7 +67,7 @@ namespace ART_MACHINE
             if (Feedrate != int.MinValue)
                 AddParameter("F", Feedrate);
 
-            
+
 
             AddParameter("X", point.X);
             AddParameter("Y", point.Y);
@@ -97,12 +97,12 @@ namespace ART_MACHINE
             parameters = new List<String>();
 
             AddParameter("Z", Z);
-           
+
 
 
         }
 
-        public G_Code_Line(Double Z,int _feedRateZ)
+        public G_Code_Line(Double Z, int _feedRateZ)
         {
             code = 1;
             parameters = new List<String>();
@@ -136,7 +136,7 @@ namespace ART_MACHINE
 
         public Shape2DTypes type;
 
-        public Shape2D(Rhino.Geometry.Point2d[] inpoints,Shape2DTypes _type, Rhino.Geometry.Curve _curve)
+        public Shape2D(Rhino.Geometry.Point2d[] inpoints, Shape2DTypes _type, Rhino.Geometry.Curve _curve)
         {
             curve = _curve;
             type = _type;
@@ -223,9 +223,9 @@ namespace ART_MACHINE
 
         public void LiftPen()
         {
-            if(!IsLifted)
+            if (!IsLifted)
             {
-                lines.Add(new G_Code_Line(penLiftHeight,feedRateZ));
+                lines.Add(new G_Code_Line(penLiftHeight, feedRateZ));
                 toolPath.Add(new Rhino.Geometry.Point3d(
                     toolPath[toolPath.Count - 1].X,
                     toolPath[toolPath.Count - 1].Y,
@@ -237,9 +237,9 @@ namespace ART_MACHINE
 
         public void LowerPen()
         {
-            if(IsLifted)
+            if (IsLifted)
             {
-            lines.Add(new G_Code_Line(penZeroZ, feedRateZ));
+                lines.Add(new G_Code_Line(penZeroZ, feedRateZ));
             }
             IsLifted = false;
         }
@@ -266,7 +266,7 @@ namespace ART_MACHINE
                 LiftPen();
                 AddNextLinePoint(points[0]);
             }
-                LowerPen();
+            LowerPen();
 
             foreach (Rhino.Geometry.Point2d p in points)
             {
@@ -284,26 +284,36 @@ namespace ART_MACHINE
 
         }
 
-        public void AddArcMove(Rhino.Geometry.Point2d centerPoint, Rhino.Geometry.Point2d midpoint, Rhino.Geometry.Point2d startPoint, Rhino.Geometry.Point2d endPoint, Rhino.Geometry.Arc arc,bool penLift = true)
+        public void AddArcMove(Rhino.Geometry.Point2d centerPoint, Rhino.Geometry.Point2d midpoint, Rhino.Geometry.Point2d startPoint, Rhino.Geometry.Point2d endPoint, Rhino.Geometry.Arc arc, bool penLift = true)
         {
+            int arcCode = 2;
 
-            //Check if arc is drawn cw or ccw
-           double angle =  Rhino.Geometry.Vector3d.VectorAngle(
-                new Rhino.Geometry.Vector3d(arc.PointAt(0).X - centerPoint.X, arc.PointAt(0).Y - centerPoint.Y, 0),
-                new Rhino.Geometry.Vector3d(arc.PointAt(0.1).X - centerPoint.X, arc.PointAt(0.1).Y - centerPoint.Y, 0),
-                Rhino.Geometry.Plane.WorldXY);
-                
-            int arcCode = -1;
-            
-
-            if (angle < Math.PI)
-                {
-                arcCode = 2; //G2 for ccw
-
-            }
-            else
+            bool fullCircle = false;
+            if (startPoint.X == endPoint.X && startPoint.Y == endPoint.Y)
             {
-                arcCode = 3; //G3 for cw
+                fullCircle = true;
+            }
+
+            if (!fullCircle)
+            {
+                //Check if arc is drawn cw or ccw
+                double angle = Rhino.Geometry.Vector3d.VectorAngle(
+                     new Rhino.Geometry.Vector3d(arc.PointAt(0).
+                     X - centerPoint.X, arc.PointAt(0).Y - centerPoint.Y, 0),
+                     new Rhino.Geometry.Vector3d(arc.PointAt(0.1).X - centerPoint.X, arc.PointAt(0.1).Y - centerPoint.Y, 0),
+                     Rhino.Geometry.Plane.WorldXY);
+
+
+
+                if (angle < Math.PI)
+                {
+                    arcCode = 2; //G2 for ccw
+
+                }
+                else
+                {
+                    arcCode = 3; //G3 for cw
+                }
             }
 
             if (penLift)
@@ -311,12 +321,25 @@ namespace ART_MACHINE
                 LiftPen();
             }
 
-            lines.Add(new G_Code_Line(
+            if (!fullCircle)
+            {
+
+                lines.Add(new G_Code_Line(
                 "(Drawing ARC with center " + centerPoint.ToString() +
                 " from " + startPoint.ToString() +
                 " to " + endPoint.ToString() +
                 ")")); // Comments
 
+
+            }
+
+            else
+            {
+                lines.Add(new G_Code_Line(
+                "(Drawing Circle with center " + centerPoint.ToString() +
+                " with radius " + startPoint.DistanceTo(centerPoint) +
+                ")")); // Comments
+            }
 
 
             AddNextLinePoint(startPoint);
@@ -324,24 +347,27 @@ namespace ART_MACHINE
 
             LowerPen();
 
-            //G_Code_Line g_Code_Line = new G_Code_Line(arcCode); //G3 - Arc or Circle Move
-            //g_Code_Line.AddParameter("X", endPoint.X);
-            //g_Code_Line.AddParameter("Y", endPoint.Y);
-            //g_Code_Line.AddParameter("I", centerPoint.X - startPoint.X);
-            //g_Code_Line.AddParameter("J", centerPoint.Y - startPoint.Y);
-            //g_Code_Line.AddParameter("F", feedRateDOWN);
-
-            G_Code_Line g_Code_Line = new G_Code_Line(arcCode); //G3/G2- Arc or Circle Move
-            g_Code_Line.AddParameter("X", endPoint.X);
-            g_Code_Line.AddParameter("Y", endPoint.Y);
-            g_Code_Line.AddParameter("R", startPoint.DistanceTo(centerPoint));
-            g_Code_Line.AddParameter("F", feedRateDOWN);
-
-            
-
-          //  toolPath.Add(new Rhino.Geometry.Point3d(endPoint.X ,endPoint.Y, IsLifted ? penLiftHeight : penZeroZ));
+            G_Code_Line g_Code_Line;
 
 
+            if (!fullCircle)
+            {
+
+                g_Code_Line = new G_Code_Line(arcCode); //G3/G2- Arc or Circle Move
+                g_Code_Line.AddParameter("X", endPoint.X);
+                g_Code_Line.AddParameter("Y", endPoint.Y);
+                g_Code_Line.AddParameter("R", startPoint.DistanceTo(centerPoint));
+                g_Code_Line.AddParameter("F", feedRateDOWN);
+
+            }
+            else
+            {
+                g_Code_Line = new G_Code_Line(arcCode); //G3 - Arc or Circle Move
+                g_Code_Line.AddParameter("I", centerPoint.X - startPoint.X);
+                g_Code_Line.AddParameter("J", centerPoint.Y - startPoint.Y);
+                g_Code_Line.AddParameter("F", feedRateDOWN);
+
+            }
 
 
             lines.Add(g_Code_Line);
@@ -349,9 +375,16 @@ namespace ART_MACHINE
 
         }
 
+        public void AddDotMove(Rhino.Geometry.Point2d point)
+        {
+            AddNextLinePoint(point);
+            LowerPen();
+            LiftPen();
+        }
+
 
         //G5 - Bézier cubic spline
-        public void AddBezierMove(List<Rhino.Geometry.Point2d> curvePoints, bool penLift = true) 
+        public void AddBezierMove(List<Rhino.Geometry.Point2d> curvePoints, bool penLift = true)
         {
             if (penLift)
             {
@@ -362,9 +395,9 @@ namespace ART_MACHINE
             Rhino.Geometry.Point2d endPoint = curvePoints[3];
 
             AddNextLinePoint(startPoint);
-            
+
             lines.Add(new G_Code_Line(
-                "(Drawing Bezier" + 
+                "(Drawing Bezier" +
                 "from " + startPoint.ToString() +
                 " to " + endPoint.ToString() +
                 ")")); // Comments
@@ -416,7 +449,7 @@ namespace ART_MACHINE
         public void AddShutdownCode()
         {
             lines.Add(new G_Code_Line(";AddShutdownCode()")); // Blank Line
-           
+
             LiftPen();
 
             lines.Add(new G_Code_Line("G1 X0 Y0 F" + feedRateUP + "(Move Home)")); // M0 go to location , , home.

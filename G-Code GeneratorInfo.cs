@@ -5,53 +5,53 @@ using Grasshopper.Kernel;
 namespace ART_MACHINE
 {
     public class G_Code_GeneratorInfo : GH_AssemblyInfo
-  {
-    public override string Name
     {
-        get
+        public override string Name
         {
-            return "ART+MACHINE supportPlugin for grasshopper";
+            get
+            {
+                return "ART+MACHINE supportPlugin for grasshopper v0.4.05";
+            }
         }
-    }
-    public override Bitmap Icon
-    {
-        get
+        public override Bitmap Icon
         {
-            //Return a 24x24 pixel bitmap to represent this GHA library.
-            return null;
+            get
+            {
+                //Return a 24x24 pixel bitmap to represent this GHA library.
+                return null;
+            }
         }
-    }
-    public override string Description
-    {
-        get
+        public override string Description
         {
-            //Return a short string describing the purpose of this GHA library.
-            return "ART+MACHINE supportPlugin for grasshopper";
+            get
+            {
+                //Return a short string describing the purpose of this GHA library.
+                return "ART+MACHINE supportPlugin for grasshopper";
+            }
         }
-    }
-    public override Guid Id
-    {
-        get
+        public override Guid Id
         {
-            return new Guid("69590aeb-9583-491b-915d-f8ff3f276f25");
+            get
+            {
+                return new Guid("69590aeb-9583-491b-915d-f8ff3f276f25");
+            }
         }
-    }
 
-    public override string AuthorName
-    {
-        get
+        public override string AuthorName
         {
-            //Return a string identifying you or your company.
-            return "Frans Nygaard";
+            get
+            {
+                //Return a string identifying you or your company.
+                return "Frans Nygaard";
+            }
+        }
+        public override string AuthorContact
+        {
+            get
+            {
+                //Return a string representing your preferred contact details.
+                return "frans@fransnygaard.com";
+            }
         }
     }
-    public override string AuthorContact
-    {
-        get
-        {
-            //Return a string representing your preferred contact details.
-            return "frans@fransnygaard.com";
-        }
-    }
-}
 }

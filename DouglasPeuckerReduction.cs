@@ -41,7 +41,7 @@ namespace ART_MACHINE
 
             List<Rhino.Geometry.Point2d> returnPoints = new List<Rhino.Geometry.Point2d>();
             pointIndexsToKeep.Sort();
-            
+
             foreach (Int32 indexxx in pointIndexsToKeep)
             {
                 returnPoints.Add(Points[indexxx]);
@@ -61,14 +61,14 @@ namespace ART_MACHINE
             for (Int32 indexx = firstPoint; indexx < lastPoint; indexx++)
             {
                 Double distance = PerpendicularDistance(points[firstPoint], points[lastPoint], points[indexx]);
-                if(distance > maxDistance)
+                if (distance > maxDistance)
                 {
                     maxDistance = distance;
                     indexFarthest = indexx;
                 }
             }
 
-            if(maxDistance > tolerance && indexFarthest != 0)
+            if (maxDistance > tolerance && indexFarthest != 0)
             {
                 //Add the largest point that exceeds the tolerance
                 pointIndexsToKeep.Add(indexFarthest);
