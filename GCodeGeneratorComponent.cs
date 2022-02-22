@@ -40,9 +40,10 @@ namespace ART_MACHINE
             pManager.AddNumberParameter("PenLiftHeigt", "Lift", "The lift distance to lift pen", GH_ParamAccess.item, 3.0f);
             pManager.AddIntegerParameter("FeedRate Z", "F_Z", "The feedrate in Z", GH_ParamAccess.item, 1000);
             pManager.AddNumberParameter("PenLiftTolerance", "T", "Tolerance for lifting pen between lines.", GH_ParamAccess.item, 0.1);
-            pManager.AddBooleanParameter("ArcSupport(BETA)", "A", "Set to true if controller have support for arc (G2/G3)", GH_ParamAccess.item, false);
-            pManager.AddBooleanParameter("BezierSupport(NOT READY)", "B", "Set to true if controller have support for bezier (G5)", GH_ParamAccess.item, false);
             pManager.AddBooleanParameter("Sort Lines", "S", "True sorts the lines to minimize pen up movemnets, False draws them in the default order", GH_ParamAccess.item, true);
+            pManager.AddBooleanParameter("ArcSupport(RC)", "A", "Set to true if controller have support for arc (G2/G3)", GH_ParamAccess.item, false);
+            pManager.AddBooleanParameter("BezierSupport(BETA)", "B", "Set to true if controller have support for bezier (G5)", GH_ParamAccess.item, false);
+            pManager.AddNumberParameter("BezierKinkTolerance", "K", "G1 Continuity tolerance in radians", GH_ParamAccess.item, Math.PI / 90);
 
 
         }
@@ -69,11 +70,12 @@ namespace ART_MACHINE
 
             List<Rhino.Geometry.Point3d> debug = new List<Point3d>();
             List<String> debugStr = new List<string>();
-            
+
 
             //INPUTS
             Double simplifyTolerance = 2;
             Double divideDistance = simplifyTolerance / 2;
+            double bezierKinkTolerance = Math.PI / 90;  //2 deg
             Double penLiftHeight = 2;
             Double penLiftTolerance = 0.1;
             int feedRateUP = 1000;
@@ -95,9 +97,10 @@ namespace ART_MACHINE
             DA.GetData(4, ref penLiftHeight);
             DA.GetData(5, ref feedRateZ);
             DA.GetData(6, ref penLiftTolerance);
-            DA.GetData(7, ref arcSupport);
-            DA.GetData(8, ref bezierSupport);
-            DA.GetData(9, ref sortLines);
+            DA.GetData(7, ref sortLines);
+            DA.GetData(8, ref arcSupport);
+            DA.GetData(9, ref bezierSupport);
+            DA.GetData(10, ref bezierKinkTolerance);
 
 
 
@@ -151,74 +154,41 @@ namespace ART_MACHINE
                     shapesToDraw.Add(new_shape2d);
                 }
 
-                else if (bezierSupport && false)
-                {
-
-                }
 
                 else
                 {
+                    if (bezierSupport && true)
+                    {
+                        BezierCurve[] beziers = Rhino.Geometry.BezierCurve.CreateCubicBeziers(c, simplifyTolerance, bezierKinkTolerance);
+                        debugStr.Add("  CURVE FOUND  Bezier support");
 
-                    debugStr.Add("   CURVE FOUND   No bezier support - UsingDouglasPeuckerReduction");
+                        foreach (BezierCurve b in beziers)
+                        {
+                            Rhino.Geometry.Point2d[] _tempArrayBez = new Rhino.Geometry.Point2d[4] { b.GetControlVertex2d(0), b.GetControlVertex2d(1), b.GetControlVertex2d(2), b.GetControlVertex2d(3) };
+                            Shape2D new_shape2dBez = new Shape2D(_tempArrayBez, Shape2D.Shape2DTypes.bezier, c);
+                            shapesToDraw.Add(new_shape2dBez);
+                        }
 
-                    Rhino.Geometry.Point3d[] _tempArray;
-                    var _ = c.DivideByLength(divideDistance, true, out _tempArray);
-                    _tempArray[_tempArray.Length - 1] = c.PointAtEnd;
+                    }
+                    else
+                    {
 
-                    Shape2D new_shape2d = new Shape2D(_tempArray, Shape2D.Shape2DTypes.polyline, c);
-                    new_shape2d.SimplefyWithDouglasPeuckerReduction(simplifyTolerance);
+                        debugStr.Add("   CURVE FOUND   No bezier support - UsingDouglasPeuckerReduction");
 
-                    //foreach (Point2d p in new_shape2d.getPointList())
-                    //debug.Add(new Point3d(p.X,p.Y,0));
+                        Rhino.Geometry.Point3d[] _tempArrayPL;
+                        var _ = c.DivideByLength(divideDistance, true, out _tempArrayPL);
+                        _tempArrayPL[_tempArrayPL.Length - 1] = c.PointAtEnd;
 
-                    shapesToDraw.Add(new_shape2d);
+                        Shape2D new_shape2d = new Shape2D(_tempArrayPL, Shape2D.Shape2DTypes.polyline, c);
+                        new_shape2d.SimplefyWithDouglasPeuckerReduction(simplifyTolerance);
+
+                        //foreach (Point2d p in new_shape2d.getPointList())
+                        //debug.Add(new Point3d(p.X,p.Y,0));
+
+                        shapesToDraw.Add(new_shape2d);
+                    }
+
                 }
-
-
-                //else if(false)
-                //{
-                //    try
-                //    {
-                //        if(!bezierSupport)
-                //        {
-                //            throw new Exception("No BezierSupport");
-                //        }
-                //        BezierCurve[] beziers = Rhino.Geometry.BezierCurve.CreateCubicBeziers(c, simplifyTolerance, simplifyTolerance);
-                //        foreach (BezierCurve b in beziers){
-                //            if(b.ControlVertexCount !=4)
-                //            {
-                //                debugStr.Add("   ControlVertexCount = " + b.ControlVertexCount);
-                //                throw new Exception("ControlVertexCount != 2");
-                //            }
-                //            Rhino.Geometry.Point2d[] _tempArray = new Rhino.Geometry.Point2d[4] { b.GetControlVertex2d(0), b.GetControlVertex2d(1), b.GetControlVertex2d(2), b.GetControlVertex2d(3) };
-                //            Shape2D new_shape2d = new Shape2D(_tempArray, Shape2D.Shape2DTypes.bezier, c);
-                //            shapesToDraw.Add(new_shape2d);
-                //        }
-
-                //    }
-
-                //    catch (Exception e)
-                //    {
-                //        debugStr.Add( "Error " + e.ToString() + " fall back on SimplefyWithDouglasPeuckerReduction");
-
-
-                //        Rhino.Geometry.Point3d[] _tempArray;
-                //        var _ = c.DivideByLength(divideDistance, true, out _tempArray);
-                //        _tempArray[_tempArray.Length - 1] = c.PointAtEnd;
-
-                //        Shape2D new_shape2d = new Shape2D(_tempArray, Shape2D.Shape2DTypes.polyline, c);
-                //        new_shape2d.SimplefyWithDouglasPeuckerReduction(simplifyTolerance);
-
-                //        //foreach (Point2d p in new_shape2d.getPointList())
-                //        //debug.Add(new Point3d(p.X,p.Y,0));
-
-                //        shapesToDraw.Add(new_shape2d);
-                //    }
-
-
-
-
-                //}
             }
 
             debugStr.Add("Done identifying shapes.");

@@ -10,7 +10,7 @@ namespace ART_MACHINE
         {
             get
             {
-                return "ART+MACHINE supportPlugin for grasshopper v0.4.05";
+                return "ART+MACHINE supportPlugin for grasshoppergra";
             }
         }
         public override Bitmap Icon
