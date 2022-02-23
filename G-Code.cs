@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -186,6 +187,9 @@ namespace ART_MACHINE
     public class G_Code
     {
 
+        int decimalPrecision = 4;
+        int bezierSpeedDivider = 50;
+
         List<G_Code_Line> lines;
 
         Double penLiftHeight;
@@ -220,6 +224,12 @@ namespace ART_MACHINE
         }
 
 
+        public static string GetAssemblyFileVersion()
+        {
+            System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
+            FileVersionInfo fileVersion = FileVersionInfo.GetVersionInfo(assembly.Location);
+            return fileVersion.FileVersion;
+        }
 
         public void LiftPen()
         {
@@ -397,22 +407,22 @@ namespace ART_MACHINE
             AddNextLinePoint(startPoint);
 
             lines.Add(new G_Code_Line(
-                "(Drawing Bezier" +
+                "(Drawing Bezier " +
                 "from " + startPoint.ToString() +
                 " to " + endPoint.ToString() +
                 ")")); // Comments
 
 
             LowerPen();
-
+            
             G_Code_Line g_Code_Line = new G_Code_Line((int)5); //G5 - Bézier cubic spline
-            g_Code_Line.AddParameter("X", endPoint.X);
-            g_Code_Line.AddParameter("Y", endPoint.Y);
-            g_Code_Line.AddParameter("I", curvePoints[1].X - startPoint.X);
-            g_Code_Line.AddParameter("J", curvePoints[1].Y - startPoint.Y);
-            g_Code_Line.AddParameter("P", curvePoints[2].X - endPoint.X);
-            g_Code_Line.AddParameter("Q", curvePoints[2].Y - endPoint.Y);
-            g_Code_Line.AddParameter("F", feedRateDOWN);
+            g_Code_Line.AddParameter("X", Math.Round(endPoint.X,decimalPrecision));
+            g_Code_Line.AddParameter("Y", Math.Round(endPoint.Y, decimalPrecision));
+            g_Code_Line.AddParameter("I", Math.Round(curvePoints[1].X - startPoint.X, decimalPrecision));
+            g_Code_Line.AddParameter("J", Math.Round(curvePoints[1].Y - startPoint.Y, decimalPrecision));
+            g_Code_Line.AddParameter("P", Math.Round(curvePoints[2].X - endPoint.X, decimalPrecision));
+            g_Code_Line.AddParameter("Q", Math.Round(curvePoints[2].Y - endPoint.Y, decimalPrecision));
+            g_Code_Line.AddParameter("F", feedRateDOWN / bezierSpeedDivider);
 
 
             lines.Add(g_Code_Line);
@@ -422,9 +432,11 @@ namespace ART_MACHINE
 
         private void AddStartupCode()
         {
+
+
             lines.Add(new G_Code_Line(";AddStartupCode()")); //
 
-            lines.Add(new G_Code_Line(";G-Code from Grasshopper plugin."));
+            lines.Add(new G_Code_Line(";G-Code from Grasshopper plugin version " + GetAssemblyFileVersion()));
 
 
             lines.Add(new G_Code_Line(penLiftHeight, feedRateZ));

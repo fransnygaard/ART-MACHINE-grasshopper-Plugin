@@ -11,8 +11,12 @@ using Rhino.Geometry;
 
 namespace ART_MACHINE
 {
+
+
     public class GCodeGeneratorComponent : GH_Component
     {
+
+
         /// <summary>
         /// Each implementation of GH_Component must provide a public 
         /// constructor without any arguments.
@@ -108,8 +112,9 @@ namespace ART_MACHINE
             if (inCrv.Count == 0)
                 return;
 
-            //sort shapes
-            //implement laters
+
+
+
             Polyline pline;
             //add to shapesList
             List<Shape2D> shapesToDraw = new List<Shape2D>();

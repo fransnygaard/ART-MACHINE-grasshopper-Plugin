@@ -26,7 +26,7 @@ namespace ART_MACHINE
         {
             pManager.AddTextParameter("Paper Size", "S", "Name of paper e.g. 'A4'", GH_ParamAccess.item, "A3");
             pManager.AddBooleanParameter("Landscape", "L", "True for landsacape, False for Portrait", GH_ParamAccess.item, true);
-            pManager.AddNumberParameter("Margins", "M", "Margins offset from ountline", GH_ParamAccess.item, 0.0);
+            pManager.AddNumberParameter("Margins", "M", "Margins offset from ountline", GH_ParamAccess.item, 10.0);
         }
 
         /// <summary>
@@ -35,6 +35,7 @@ namespace ART_MACHINE
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
             pManager.AddGeometryParameter("Paper Outline", "P", "Outline curve of paper", GH_ParamAccess.list);
+            pManager.AddGeometryParameter("DrawArea", "M", "Outline curve of DrawArea", GH_ParamAccess.list);
         }
 
         /// <summary>
@@ -44,9 +45,12 @@ namespace ART_MACHINE
         protected override void SolveInstance(IGH_DataAccess DA)
         {
             string paperName = "A3";
+            double m = 0;
+
             bool landscape = true;
             DA.GetData(0, ref paperName);
             DA.GetData(1, ref landscape);
+            DA.GetData(2, ref m);
 
             int x = -1, y = -1;
 
@@ -120,7 +124,16 @@ namespace ART_MACHINE
 
 
 
+            Polyline pM = new Polyline();
+            pM.Add(0+m, 0+m, 0);
+            pM.Add(0+m, y-m, 0);
+            pM.Add(x-m, y-m, 0);
+            pM.Add(x-m, 0+m, 0);
+            pM.Add(0+m, 0+m, 0);
+
+
             DA.SetData(0,p);
+            DA.SetData(1,pM);
 
         }
 
