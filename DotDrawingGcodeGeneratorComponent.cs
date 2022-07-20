@@ -34,7 +34,6 @@ namespace ART_MACHINE
             // pManager.AddBooleanParameter("ArcSupport(BETA)", "A", "Set to true if controller have support for arc (G2/G3)", GH_ParamAccess.item, false);
             // pManager.AddBooleanParameter("BezierSupport(NOT READY)", "B", "Set to true if controller have support for bezier (G5)", GH_ParamAccess.item, false);
             pManager.AddIntegerParameter("Sort dots Mode(Not fully implementet)", "S", "0-No sort ,1 sort closest 2-sort by X, 3- sort by Y", GH_ParamAccess.item, 1);
-            pManager.AddIntegerParameter("Sort dots TTTT Mode(Not fully implementet)", "S", "0-No sort ,1 sort closest 2-sort by X, 3- sort by Y", GH_ParamAccess.item, 1);
 
 
         }

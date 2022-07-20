@@ -109,6 +109,7 @@ namespace ART_MACHINE
 
 
             //INPUTS
+
             if (inCrv.Count == 0)
                 return;
 
