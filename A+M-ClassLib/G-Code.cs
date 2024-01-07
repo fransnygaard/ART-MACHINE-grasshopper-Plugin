@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using GH_GeneralClassLibrary.Utils;
 
 namespace ART_MACHINE
 {
@@ -73,6 +71,24 @@ namespace ART_MACHINE
             AddParameter("X", point.X);
             AddParameter("Y", point.Y);
             AddParameter("Z", point.Z);
+
+
+        }
+
+        public G_Code_Line(Rhino.Geometry.Point3d point, double extruder, int Feedrate = int.MinValue)
+        {
+            code = 1;
+            parameters = new List<String>();
+
+            if (Feedrate != int.MinValue)
+                AddParameter("F", Feedrate);
+
+
+
+            AddParameter("X", point.X);
+            AddParameter("Y", point.Y);
+            AddParameter("Z", point.Z);
+            AddParameter("E", extruder);
 
 
         }
@@ -209,7 +225,7 @@ namespace ART_MACHINE
                 return feedRateDOWN;
         }
 
-        public G_Code(int _feedRateUP, int _feedRateDOWN, int _feedRateZ, Double _penLiftHeight, Double _penZeroZ)
+        public G_Code(int _feedRateUP, int _feedRateDOWN, int _feedRateZ, Double _penLiftHeight, Double _penZeroZ, int _bezierSpeedDivider)
         {
             feedRateUP = _feedRateUP;
             feedRateDOWN = _feedRateDOWN;
@@ -219,6 +235,7 @@ namespace ART_MACHINE
             lines = new List<G_Code_Line>();
             toolPath = new List<Rhino.Geometry.Point3d>();
             toolPath.Add(new Rhino.Geometry.Point3d(0, 0, penLiftHeight));
+            bezierSpeedDivider = _bezierSpeedDivider;
 
             AddStartupCode();
         }
@@ -414,9 +431,9 @@ namespace ART_MACHINE
 
 
             LowerPen();
-            
+
             G_Code_Line g_Code_Line = new G_Code_Line((int)5); //G5 - Bézier cubic spline
-            g_Code_Line.AddParameter("X", Math.Round(endPoint.X,decimalPrecision));
+            g_Code_Line.AddParameter("X", Math.Round(endPoint.X, decimalPrecision));
             g_Code_Line.AddParameter("Y", Math.Round(endPoint.Y, decimalPrecision));
             g_Code_Line.AddParameter("I", Math.Round(curvePoints[1].X - startPoint.X, decimalPrecision));
             g_Code_Line.AddParameter("J", Math.Round(curvePoints[1].Y - startPoint.Y, decimalPrecision));
@@ -464,6 +481,7 @@ namespace ART_MACHINE
 
             LiftPen();
 
+            lines.Add(new G_Code_Line("G1 Z" + penLiftHeight * 5 + " F" + feedRateZ + "(LIFT up 5x)")); // M0 go to location , , home.
             lines.Add(new G_Code_Line("G1 X0 Y0 F" + feedRateUP + "(Move Home)")); // M0 go to location , , home.
             //lines.Add(new G_Code_Line("M84 (Motors off)")); // M84 Motors off.
             lines.Add(new G_Code_Line(";END G-code"));

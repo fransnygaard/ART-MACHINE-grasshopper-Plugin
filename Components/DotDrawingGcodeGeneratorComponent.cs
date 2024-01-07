@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-
-using Grasshopper.Kernel;
+﻿using Grasshopper.Kernel;
 using Rhino.Geometry;
+using System;
+using System.Collections.Generic;
 
 namespace ART_MACHINE
 {
@@ -86,7 +85,7 @@ namespace ART_MACHINE
             if (inPoints.Count == 0)
                 return;
 
-            G_Code gcode = new G_Code(feedRateUP, feedRateDOWN, feedRateZ, penLiftHeight, 0);
+            G_Code gcode = new G_Code(feedRateUP, feedRateDOWN, feedRateZ, penLiftHeight, 0, 50);
 
 
             List<Point2d> pointsToSort = new List<Point2d>();

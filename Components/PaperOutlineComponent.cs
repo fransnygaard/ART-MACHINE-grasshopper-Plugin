@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-
-using Grasshopper.Kernel;
+﻿using Grasshopper.Kernel;
 using Rhino.Geometry;
+using System;
 
 namespace ART_MACHINE
 {
@@ -125,15 +123,15 @@ namespace ART_MACHINE
 
 
             Polyline pM = new Polyline();
-            pM.Add(0+m, 0+m, 0);
-            pM.Add(0+m, y-m, 0);
-            pM.Add(x-m, y-m, 0);
-            pM.Add(x-m, 0+m, 0);
-            pM.Add(0+m, 0+m, 0);
+            pM.Add(0 + m, 0 + m, 0);
+            pM.Add(0 + m, y - m, 0);
+            pM.Add(x - m, y - m, 0);
+            pM.Add(x - m, 0 + m, 0);
+            pM.Add(0 + m, 0 + m, 0);
 
 
-            DA.SetData(0,p);
-            DA.SetData(1,pM);
+            DA.SetData(0, p);
+            DA.SetData(1, pM);
 
         }
 

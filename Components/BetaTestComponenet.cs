@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-
-using Grasshopper.Kernel;
-using Rhino.Geometry;
+﻿using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
+using Rhino.Geometry;
+using System;
+using System.Collections.Generic;
 
 namespace ART_MACHINE
 {
@@ -14,9 +13,9 @@ namespace ART_MACHINE
         /// Initializes a new instance of the BetaTestComponenet class.
         /// </summary>
         public BetaTestComponenet()
-          : base("BetaTestComponenet", "BetaTest",
+          : base("ART+MACHINE: G-Code CURVES BETA", "G-Code CURVES BETA",
               "Description",
-              "ART + MACHINE", "BETA")
+              "ART+MACHINE", "G-Code")
         {
         }
 
@@ -37,7 +36,7 @@ namespace ART_MACHINE
             pManager.AddBooleanParameter("ArcSupport(RC)", "A", "Set to true if controller have support for arc (G2/G3)", GH_ParamAccess.item, false);
             pManager.AddBooleanParameter("BezierSupport(BETA)", "B", "Set to true if controller have support for bezier (G5)", GH_ParamAccess.item, false);
             pManager.AddNumberParameter("BezierKinkTolerance", "K", "G1 Continuity tolerance in radians", GH_ParamAccess.item, Math.PI / 90);
-
+            pManager.AddIntegerParameter("bezierSpeedDivider", "b", "G5 moves feedrate = FeedratePenDown/bezierSpeedDivider ", GH_ParamAccess.item, 50);
 
         }
 
@@ -77,6 +76,7 @@ namespace ART_MACHINE
             bool arcSupport = false;
             bool bezierSupport = false;
             bool sortLines = true;
+            int bezierSpeedDivider = 50;
 
             //OUTPUTS
             List<Point3d> toolPath = new List<Point3d>();
@@ -85,8 +85,8 @@ namespace ART_MACHINE
             if (!DA.GetDataTree(0, out inCrvTree)) return;
 
             IList<List<GH_Curve>> inCrvBranches = inCrvTree.Branches;
-            
 
+            //REGISTRER INPUTS
             DA.GetData(1, ref simplifyTolerance);
             DA.GetData(2, ref feedRateDOWN);
             DA.GetData(3, ref feedRateUP);
@@ -97,19 +97,19 @@ namespace ART_MACHINE
             DA.GetData(8, ref arcSupport);
             DA.GetData(9, ref bezierSupport);
             DA.GetData(10, ref bezierKinkTolerance);
+            DA.GetData(11, ref bezierSpeedDivider);
 
 
             //Make a G code obj   /this adds startup code
 
-            G_Code gcode = new G_Code(feedRateUP, feedRateDOWN, feedRateZ, penLiftHeight, 0);
+            G_Code gcode = new G_Code(feedRateUP, feedRateDOWN, feedRateZ, penLiftHeight, 0, bezierSpeedDivider);
 
 
 
 
             //For loop every branch in tree
 
-            debugStr.Add("Input contains " + inCrvTree.Paths.Count + " branches");
-            debugStr.Add("Input contains "+ inCrvBranches.Count.ToString() + " branches");
+            debugStr.Add("Input contains " + inCrvBranches.Count.ToString() + " branches");
 
             for (int branchIndex = 0; branchIndex < inCrvBranches.Count; branchIndex++)
 
@@ -118,7 +118,11 @@ namespace ART_MACHINE
 
                 List<GH_Curve> inCrv = inCrvBranches[branchIndex];
 
-
+                if (inCrv.Count == 0)
+                {
+                    debugStr.Add("  No curves in path " + inCrvTree.Paths[branchIndex].ToString());
+                    continue;
+                }
 
 
                 //inCrv
@@ -127,7 +131,7 @@ namespace ART_MACHINE
                 Polyline pline;
                 //add to shapesList
                 List<Shape2D> shapesToDraw = new List<Shape2D>();
-                debugStr.Add("Identifying shapes...");
+                debugStr.Add("  Identifying shapes...");
                 foreach (GH_Curve gH_Curve in inCrv)
                 {
                     var c = gH_Curve.Value;
@@ -140,7 +144,7 @@ namespace ART_MACHINE
 
                     else if (c.IsArc() && arcSupport && true && c.TryGetArc(out _))
                     {
-                        debugStr.Add("   Found Arc");
+                        debugStr.Add("      Found Arc");
                         Rhino.Geometry.Point3d[] _tempArray = new Rhino.Geometry.Point3d[2] { c.PointAtNormalizedLength(0), c.PointAtNormalizedLength(1) };
 
                         Shape2D new_shape2d = new Shape2D(_tempArray, Shape2D.Shape2DTypes.arc, c);
@@ -149,7 +153,7 @@ namespace ART_MACHINE
 
                     else if (c.IsLinear() && true)
                     {
-                        debugStr.Add("   Found Linear");
+                        debugStr.Add("      Found Linear");
                         Rhino.Geometry.Point3d[] _tempArray = new Rhino.Geometry.Point3d[2] { c.PointAtNormalizedLength(0), c.PointAtNormalizedLength(1) };
                         Shape2D new_shape2d = new Shape2D(_tempArray, Shape2D.Shape2DTypes.line, c);
                         shapesToDraw.Add(new_shape2d);
@@ -157,7 +161,7 @@ namespace ART_MACHINE
 
                     else if (c.IsPolyline() && c.TryGetPolyline(out pline) && true)
                     {
-                        debugStr.Add("   Found Polyline");
+                        debugStr.Add("      Found Polyline");
                         List<Point2d> _tempList = new List<Point2d>();
                         for (int i = 0; i < pline.Count; i++)
                         {
@@ -175,7 +179,7 @@ namespace ART_MACHINE
                         if (bezierSupport && true)
                         {
                             BezierCurve[] beziers = Rhino.Geometry.BezierCurve.CreateCubicBeziers(c, simplifyTolerance, bezierKinkTolerance);
-                            debugStr.Add("  CURVE FOUND  Bezier support");
+                            debugStr.Add("      Found Curve - Bezier support");
 
                             foreach (BezierCurve b in beziers)
                             {
@@ -188,7 +192,7 @@ namespace ART_MACHINE
                         else
                         {
 
-                            debugStr.Add("   CURVE FOUND   No bezier support - UsingDouglasPeuckerReduction");
+                            debugStr.Add("      Found Curve - No bezier support - UsingDouglasPeuckerReduction");
 
                             Rhino.Geometry.Point3d[] _tempArrayPL;
                             var _ = c.DivideByLength(divideDistance, true, out _tempArrayPL);
@@ -206,8 +210,8 @@ namespace ART_MACHINE
                     }
                 }
 
-                debugStr.Add("Done identifying shapes.");
-                
+                debugStr.Add("  Done identifying shapes.");
+
 
                 //variable to hold last point , start at 0,0,0;
                 Rhino.Geometry.Point2d lastPoint = new Point2d(0, 0);
@@ -215,7 +219,7 @@ namespace ART_MACHINE
                 Double distanceToNextPoint = Double.MaxValue;
                 bool nextReverse = false;
 
-                debugStr.Add("Sorting shapes...");
+                debugStr.Add("  Sorting shapes...");
 
                 while (true)
                 {
@@ -267,9 +271,9 @@ namespace ART_MACHINE
                     }
 
                     if (sortLines)
-                        debugStr.Add("adding closest shape at index [" + indexOfNextShape + "] distance " + distanceToNextPoint);
+                        debugStr.Add("  adding closest shape at index [" + indexOfNextShape + "] distance " + distanceToNextPoint);
                     else
-                        debugStr.Add("adding next shape at index [" + indexOfNextShape + "] distance " + distanceToNextPoint);
+                        debugStr.Add("  adding next shape at index [" + indexOfNextShape + "] distance " + distanceToNextPoint);
 
 
                     //add the best candidate to gCode   -- then remove from shapesToDrawList
@@ -287,7 +291,7 @@ namespace ART_MACHINE
                     {
                         debugStr.Add("      adding LineMove");
                         List<Point2d> pointsToDraw = shapesToDraw[indexOfNextShape].getPointList(nextReverse);
-                        debugStr.Add("      AddNextLineSegment with" + pointsToDraw.Count + " points");
+                        debugStr.Add("          AddNextLineSegment with" + pointsToDraw.Count + " points");
                         lastPoint = pointsToDraw[pointsToDraw.Count - 1];
                         gcode.AddNextLineSegment(pointsToDraw, lift);
 
@@ -331,7 +335,7 @@ namespace ART_MACHINE
 
                 }
 
-                debugStr.Add("Done sorting shapes...");
+                debugStr.Add("  Done sorting shapes...");
             }
             gcode.AddShutdownCode();
 

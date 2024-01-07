@@ -1,16 +1,15 @@
 ﻿using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("ART+MACHINE grasshopper plugin")]
-[assembly: AssemblyDescription("Plugin for grasshopper for the ART+MACHINE project")]
+[assembly: AssemblyTitle("ART+MACHINE penplotter companion plugin")]
+[assembly: AssemblyDescription("Companion Plugin for grasshopper to the ART+MACHINE project")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Frans Nygaard")]
 [assembly: AssemblyProduct("G-Code Generator")]
-[assembly: AssemblyCopyright("Copyright ©  2022")]
+[assembly: AssemblyCopyright("Frans Nygaard Copyright ©2023")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-
-using Grasshopper.Kernel;
+﻿using Grasshopper.Kernel;
 using Rhino.Geometry;
+using System;
+using System.Collections.Generic;
 
 // In order to load the result of this wizard, you will also need to
 // add the output bin/ folder of this project to the list of loaded
@@ -78,7 +77,7 @@ namespace ART_MACHINE
 
             //INPUTS
             Double simplifyTolerance = 2;
-            Double divideDistance = simplifyTolerance / 2;
+
             double bezierKinkTolerance = Math.PI / 90;  //2 deg
             Double penLiftHeight = 2;
             Double penLiftTolerance = 0.1;
@@ -107,6 +106,8 @@ namespace ART_MACHINE
             DA.GetData(10, ref bezierKinkTolerance);
 
 
+            //Derived from inputs
+            Double divideDistance = simplifyTolerance / 2;
 
             //INPUTS
 
@@ -181,15 +182,16 @@ namespace ART_MACHINE
 
                         debugStr.Add("   CURVE FOUND   No bezier support - UsingDouglasPeuckerReduction");
 
-                        Rhino.Geometry.Point3d[] _tempArrayPL;
-                        var _ = c.DivideByLength(divideDistance, true, out _tempArrayPL);
-                        _tempArrayPL[_tempArrayPL.Length - 1] = c.PointAtEnd;
+
+
+                        PolylineCurve plc = c.ToPolyline(simplifyTolerance, 0, 0.1, 100);
+
+                        Polyline pl;
+                        plc.TryGetPolyline(out pl);
+
+                        Rhino.Geometry.Point3d[] _tempArrayPL = pl.ToArray();
 
                         Shape2D new_shape2d = new Shape2D(_tempArrayPL, Shape2D.Shape2DTypes.polyline, c);
-                        new_shape2d.SimplefyWithDouglasPeuckerReduction(simplifyTolerance);
-
-                        //foreach (Point2d p in new_shape2d.getPointList())
-                        //debug.Add(new Point3d(p.X,p.Y,0));
 
                         shapesToDraw.Add(new_shape2d);
                     }
@@ -202,7 +204,7 @@ namespace ART_MACHINE
 
 
             //Make a G code obj
-            G_Code gcode = new G_Code(feedRateUP, feedRateDOWN, feedRateZ, penLiftHeight, 0);
+            G_Code gcode = new G_Code(feedRateUP, feedRateDOWN, feedRateZ, penLiftHeight, 0, 50);
 
             //variable to hold last point , start at 0,0,0;
             Rhino.Geometry.Point2d lastPoint = new Point2d(0, 0);

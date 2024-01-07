@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Grasshopper.Kernel;
+using System;
 using System.Drawing;
-using Grasshopper.Kernel;
 
 namespace ART_MACHINE
 {
@@ -10,7 +10,7 @@ namespace ART_MACHINE
         {
             get
             {
-                return "ART+MACHINE supportPlugin for grasshoppergra";
+                return "ARTMACHINE";
             }
         }
         public override Bitmap Icon
@@ -26,7 +26,7 @@ namespace ART_MACHINE
             get
             {
                 //Return a short string describing the purpose of this GHA library.
-                return "ART+MACHINE supportPlugin for grasshopper";
+                return "ART...MACHINE penplotter companion plugin. Used to generate gcode from rhino geomerty";
             }
         }
         public override Guid Id
@@ -50,7 +50,7 @@ namespace ART_MACHINE
             get
             {
                 //Return a string representing your preferred contact details.
-                return "frans@fransnygaard.com";
+                return "fransnygaard.com";
             }
         }
     }

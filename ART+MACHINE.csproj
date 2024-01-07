@@ -19,7 +19,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\..\..\AppData\Roaming\Grasshopper\Libraries\myDevFolder\ART_MACHINE_v04\</OutputPath>
+    <OutputPath>..\..\..\..\AppData\Roaming\Grasshopper\Libraries\myDevFolder\ART+MACHINE\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
@@ -27,7 +27,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\..\..\..\AppData\Roaming\Grasshopper\Libraries\myDevFolder\</OutputPath>
+    <OutputPath>..\..\..\..\AppData\Roaming\Grasshopper\Libraries\myDevFolder\ART+MACHINE\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -54,15 +54,23 @@
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BetaTestComponenet.cs" />
-    <Compile Include="DotDrawingGcodeGeneratorComponent.cs" />
-    <Compile Include="DouglasPeuckerReduction.cs" />
-    <Compile Include="G-Code.cs" />
-    <Compile Include="GCodeGeneratorComponent.cs" />
+    <Compile Include="Components\BetaTestComponenet.cs" />
+    <Compile Include="Components\DotDrawingGcodeGeneratorComponent.cs" />
+    <Compile Include="Components\QuadTreeComponent.cs" />
+    <Compile Include="A+M-ClassLib\G-Code.cs" />
+    <Compile Include="Components\GCodeGeneratorComponent.cs" />
     <Compile Include="G-Code GeneratorInfo.cs" />
-    <Compile Include="PaperOutlineComponent.cs" />
+    <Compile Include="Components\GcodeGenerator_from_3D_SlicedCurves.cs" />
+    <Compile Include="A+M-ClassLib\GCode_3d.cs" />
+    <Compile Include="Components\PaperOutlineComponent.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="WriteTextToFileComponent.cs" />
+    <Compile Include="Components\WriteTextToFileComponent.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\GH_GeneralClassLibrary\GH_GeneralClassLibrary.csproj">
+      <Project>{cdedfbcc-ca3a-4ab7-a0af-e4a29b48a0da}</Project>
+      <Name>GH_GeneralClassLibrary</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
