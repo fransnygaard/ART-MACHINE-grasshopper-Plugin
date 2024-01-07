@@ -3,6 +3,7 @@ using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
 using GH_GeneralClassLibrary.DataStructures;
+using GH_GeneralClassLibrary.Utils;
 
 namespace ART_MACHINE.Components
 {
@@ -12,7 +13,7 @@ namespace ART_MACHINE.Components
         /// Initializes a new instance of the QuadTreeComponent class.
         /// </summary>
         public QuadTreeComponent()
-          : base("QuadTreeComponent", "Nickname",
+          : base("QuadTree", "QT",
               "Description",
               "Category", "DEV")
         {
@@ -51,7 +52,8 @@ namespace ART_MACHINE.Components
 
             //var AllCells = Utils.QT_ClassExtentions.GetAllSubCells(qt.rootCell);
 
-            IEnumerable<QT_Cell> AllCells = QT_ClassExtentions.Traverse(qt.rootCell, node => node.sub_cells);
+            //IEnumerable<QT_Cell> AllCells = Utils.Traverse(qt.rootCell, node => node.sub_cells);
+            IEnumerable<QT_Cell> AllCells = qt.rootCell.TraverseNested(node => node.sub_cells);
             var bounds = QT_ClassExtentions.GetAllBoundaries(AllCells);
 
 
