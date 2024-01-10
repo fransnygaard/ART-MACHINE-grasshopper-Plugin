@@ -120,7 +120,7 @@ namespace ART_MACHINE
             Polyline pline;
             //add to shapesList
             List<Shape2D> shapesToDraw = new List<Shape2D>();
-            debugStr.Add("Identifying shapes....");
+            //debugStr.Add("Identifying shapes....");
             foreach (Rhino.Geometry.Curve c in inCrv)
             {
 
@@ -132,7 +132,7 @@ namespace ART_MACHINE
 
                 else if (c.IsArc() && arcSupport && true && c.TryGetArc(out _))
                 {
-                    debugStr.Add("   Found Arc");
+                    //debugStr.Add("   Found Arc");
                     Rhino.Geometry.Point3d[] _tempArray = new Rhino.Geometry.Point3d[2] { c.PointAtNormalizedLength(0), c.PointAtNormalizedLength(1) };
 
                     Shape2D new_shape2d = new Shape2D(_tempArray, Shape2D.Shape2DTypes.arc, c);
@@ -141,7 +141,7 @@ namespace ART_MACHINE
 
                 else if (c.IsLinear() && true)
                 {
-                    debugStr.Add("   Found Linear");
+                    //debugStr.Add("   Found Linear");
                     Rhino.Geometry.Point3d[] _tempArray = new Rhino.Geometry.Point3d[2] { c.PointAtNormalizedLength(0), c.PointAtNormalizedLength(1) };
                     Shape2D new_shape2d = new Shape2D(_tempArray, Shape2D.Shape2DTypes.line, c);
                     shapesToDraw.Add(new_shape2d);
@@ -149,7 +149,7 @@ namespace ART_MACHINE
 
                 else if (c.IsPolyline() && c.TryGetPolyline(out pline) && true)
                 {
-                    debugStr.Add("   Found Polyline");
+                    //debugStr.Add("   Found Polyline");
                     List<Point2d> _tempList = new List<Point2d>();
                     for (int i = 0; i < pline.Count; i++)
                     {
@@ -167,7 +167,7 @@ namespace ART_MACHINE
                     if (bezierSupport && true)
                     {
                         BezierCurve[] beziers = Rhino.Geometry.BezierCurve.CreateCubicBeziers(c, simplifyTolerance, bezierKinkTolerance);
-                        debugStr.Add("  CURVE FOUND  Bezier support");
+                        //debugStr.Add("  CURVE FOUND  Bezier support");
 
                         foreach (BezierCurve b in beziers)
                         {
@@ -180,7 +180,7 @@ namespace ART_MACHINE
                     else
                     {
 
-                        debugStr.Add("   CURVE FOUND   No bezier support - UsingDouglasPeuckerReduction");
+                        //debugStr.Add("   CURVE FOUND   No bezier support - UsingDouglasPeuckerReduction");
 
 
 
@@ -199,7 +199,7 @@ namespace ART_MACHINE
                 }
             }
 
-            debugStr.Add("Done identifying shapes.");
+            //debugStr.Add("Done identifying shapes.");
 
 
 
@@ -212,7 +212,7 @@ namespace ART_MACHINE
             Double distanceToNextPoint = Double.MaxValue;
             bool nextReverse = false;
 
-            debugStr.Add("Sorting shapes...");
+            //debugStr.Add("Sorting shapes...");
 
             while (true)
             {
@@ -263,10 +263,10 @@ namespace ART_MACHINE
                     distanceToNextPoint = lastPoint.DistanceTo(shapesToDraw[0].startPoint());
                 }
 
-                if (sortLines)
-                    debugStr.Add("adding closest shape at index [" + indexOfNextShape + "] distance " + distanceToNextPoint);
-                else
-                    debugStr.Add("adding next shape at index [" + indexOfNextShape + "] distance " + distanceToNextPoint);
+                //if (sortLines)
+                    //debugStr.Add("adding closest shape at index [" + indexOfNextShape + "] distance " + distanceToNextPoint);
+                //else
+                    //debugStr.Add("adding next shape at index [" + indexOfNextShape + "] distance " + distanceToNextPoint);
 
 
                 //add the best candidate to gCode   -- then remove from shapesToDrawList
@@ -275,23 +275,23 @@ namespace ART_MACHINE
                 if (shapesToDraw[indexOfNextShape].type == Shape2D.Shape2DTypes.polyline)
                 {
                     List<Point2d> pointsToDraw = shapesToDraw[indexOfNextShape].getPointList(nextReverse);
-                    debugStr.Add("      AddNextLineSegment with" + pointsToDraw.Count + " points");
+                    //debugStr.Add("      AddNextLineSegment with" + pointsToDraw.Count + " points");
                     lastPoint = pointsToDraw[pointsToDraw.Count - 1];
                     gcode.AddNextLineSegment(pointsToDraw, lift);
 
                 }
                 else if (shapesToDraw[indexOfNextShape].type == Shape2D.Shape2DTypes.line)
                 {
-                    debugStr.Add("      adding LineMove");
+                    //debugStr.Add("      adding LineMove");
                     List<Point2d> pointsToDraw = shapesToDraw[indexOfNextShape].getPointList(nextReverse);
-                    debugStr.Add("      AddNextLineSegment with" + pointsToDraw.Count + " points");
+                    //debugStr.Add("      AddNextLineSegment with" + pointsToDraw.Count + " points");
                     lastPoint = pointsToDraw[pointsToDraw.Count - 1];
                     gcode.AddNextLineSegment(pointsToDraw, lift);
 
                 }
                 else if (shapesToDraw[indexOfNextShape].type == Shape2D.Shape2DTypes.arc)
                 {
-                    debugStr.Add("      adding arcMove");
+                    //debugStr.Add("      adding arcMove");
 
                     List<Point2d> pointsToDraw = shapesToDraw[indexOfNextShape].getPointList(nextReverse);
                     lastPoint = pointsToDraw[pointsToDraw.Count - 1];
@@ -315,7 +315,7 @@ namespace ART_MACHINE
                 }
                 else if (shapesToDraw[indexOfNextShape].type == Shape2D.Shape2DTypes.bezier)
                 {
-                    debugStr.Add("      adding bezierMove");
+                    //debugStr.Add("      adding bezierMove");
 
                     List<Point2d> pointsToDraw = shapesToDraw[indexOfNextShape].getPointList(nextReverse);
                     lastPoint = pointsToDraw[pointsToDraw.Count - 1];
@@ -327,7 +327,7 @@ namespace ART_MACHINE
                 shapesToDraw.RemoveAt(indexOfNextShape);
 
             }
-            debugStr.Add("Done sorting shapes...");
+            //debugStr.Add("Done sorting shapes...");
             gcode.AddShutdownCode();
 
 

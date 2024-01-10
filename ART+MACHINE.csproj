@@ -55,8 +55,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Components\BetaTestComponenet.cs" />
+    <Compile Include="Components\CurvesPreprocessorComponent.cs" />
     <Compile Include="Components\DotDrawingGcodeGeneratorComponent.cs" />
-    <Compile Include="Components\QuadTreeComponent.cs" />
     <Compile Include="A+M-ClassLib\G-Code.cs" />
     <Compile Include="Components\GCodeGeneratorComponent.cs" />
     <Compile Include="G-Code GeneratorInfo.cs" />
