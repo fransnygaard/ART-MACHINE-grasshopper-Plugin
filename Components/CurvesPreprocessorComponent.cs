@@ -28,7 +28,7 @@ namespace ART_MACHINE.Components
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
             pManager.AddCurveParameter("Polylines", "PL", "", GH_ParamAccess.list);
-            pManager.AddIntegerParameter("QuadTree Cell Capacity", "CC", "", GH_ParamAccess.item,100);
+            pManager.AddIntegerParameter("QuadTree Cell Capacity", "CC", "", GH_ParamAccess.item,150);
 
         }
 
@@ -53,7 +53,7 @@ namespace ART_MACHINE.Components
             if (!DA.GetDataList<Curve>(0, inputCurves)) { return; }
 
             int QT_Capacity = 10;
-            if (!DA.GetData<int>(1, ref QT_Capacity)) { return; }
+            DA.GetData<int>(1, ref QT_Capacity);
 
 
             List<Polyline> polylines = new List<Polyline>();

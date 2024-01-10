@@ -59,6 +59,8 @@
     <Compile Include="Components\DotDrawingGcodeGeneratorComponent.cs" />
     <Compile Include="A+M-ClassLib\G-Code.cs" />
     <Compile Include="Components\GCodeGeneratorComponent.cs" />
+    <Compile Include="Components\GcodeGeneratorSimplefiedComponent.cs" />
+    <Compile Include="Constants\AM_Constants.cs" />
     <Compile Include="G-Code GeneratorInfo.cs" />
     <Compile Include="Components\GcodeGenerator_from_3D_SlicedCurves.cs" />
     <Compile Include="A+M-ClassLib\GCode_3d.cs" />

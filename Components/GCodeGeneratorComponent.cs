@@ -43,7 +43,7 @@ namespace ART_MACHINE
             pManager.AddNumberParameter("PenLiftHeigt", "Lift", "The lift distance to lift pen", GH_ParamAccess.item, 3.0f);
             pManager.AddIntegerParameter("FeedRate Z", "F_Z", "The feedrate in Z", GH_ParamAccess.item, 1000);
             pManager.AddNumberParameter("PenLiftTolerance", "T", "Tolerance for lifting pen between lines.", GH_ParamAccess.item, 0.1);
-            pManager.AddBooleanParameter("Sort Lines", "S", "True sorts the lines to minimize pen up movemnets, False draws them in the default order", GH_ParamAccess.item, true);
+            pManager.AddBooleanParameter("Sort Lines", "S", "True sorts the lines to minimize pen up movemnets, False draws them in the default order", GH_ParamAccess.item, false);
             pManager.AddBooleanParameter("ArcSupport(RC)", "A", "Set to true if controller have support for arc (G2/G3)", GH_ParamAccess.item, false);
             pManager.AddBooleanParameter("BezierSupport(BETA)", "B", "Set to true if controller have support for bezier (G5)", GH_ParamAccess.item, false);
             pManager.AddNumberParameter("BezierKinkTolerance", "K", "G1 Continuity tolerance in radians", GH_ParamAccess.item, Math.PI / 90);
@@ -76,11 +76,11 @@ namespace ART_MACHINE
 
 
             //INPUTS
-            Double simplifyTolerance = 2;
+            double lineRegenTolerance = 2;
 
             double bezierKinkTolerance = Math.PI / 90;  //2 deg
-            Double penLiftHeight = 2;
-            Double penLiftTolerance = 0.1;
+            double penLiftHeight = 2;
+            double penLiftTolerance = 0.1;
             int feedRateUP = 1000;
             int feedRateDOWN = 1000;
             int feedRateZ = 1000;
@@ -94,7 +94,7 @@ namespace ART_MACHINE
             List<Rhino.Geometry.Curve> inCrv = new List<Curve>();
             DA.GetDataList(0, inCrv);
 
-            DA.GetData(1, ref simplifyTolerance);
+            DA.GetData(1, ref lineRegenTolerance);
             DA.GetData(2, ref feedRateDOWN);
             DA.GetData(3, ref feedRateUP);
             DA.GetData(4, ref penLiftHeight);
@@ -107,7 +107,7 @@ namespace ART_MACHINE
 
 
             //Derived from inputs
-            Double divideDistance = simplifyTolerance / 2;
+            double divideDistance = lineRegenTolerance / 2;
 
             //INPUTS
 
@@ -166,7 +166,7 @@ namespace ART_MACHINE
                 {
                     if (bezierSupport && true)
                     {
-                        BezierCurve[] beziers = Rhino.Geometry.BezierCurve.CreateCubicBeziers(c, simplifyTolerance, bezierKinkTolerance);
+                        BezierCurve[] beziers = Rhino.Geometry.BezierCurve.CreateCubicBeziers(c, lineRegenTolerance, bezierKinkTolerance);
                         //debugStr.Add("  CURVE FOUND  Bezier support");
 
                         foreach (BezierCurve b in beziers)
@@ -184,7 +184,7 @@ namespace ART_MACHINE
 
 
 
-                        PolylineCurve plc = c.ToPolyline(simplifyTolerance, 0, 0.1, 100);
+                        PolylineCurve plc = c.ToPolyline(lineRegenTolerance, 0, 0.1, 100);
 
                         Polyline pl;
                         plc.TryGetPolyline(out pl);
