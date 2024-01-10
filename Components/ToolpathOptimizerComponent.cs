@@ -1,23 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Xml.Xsl;
 using GH_GeneralClassLibrary.DataStructures;
 using GH_GeneralClassLibrary.Utils;
+using Grasshopper.GUI;
 using Grasshopper.Kernel;
+using Grasshopper.Kernel.Types;
 using Rhino.Geometry;
 
 namespace ART_MACHINE.Components
 {
-    public class CurvesPreprocessorComponent : GH_Component
+    public class ToolpathOptimizerComponent : GH_Component
     {
         /// <summary>
-        /// Initializes a new instance of the CurvesPreprocessorComponent class.
+        /// Initializes a new instance of the CurvesPreprocessorComponent_v2_v2 class.
         /// </summary>
-        public CurvesPreprocessorComponent()
-          : base("CurvesPreprocessorComponent", "Nickname",
+        public ToolpathOptimizerComponent()
+          : base("ART+MACHINE: Toolpath optimizer ", "Toolpath",
               "Description",
-              "ART+MACHINE", "Gcode")
+              "ART+MACHINE", "Tools")
 
         {
         }
@@ -27,7 +30,7 @@ namespace ART_MACHINE.Components
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddCurveParameter("Polylines", "PL", "", GH_ParamAccess.list);
+            pManager.AddGeometryParameter("InputGeomerty", "Geo", "", GH_ParamAccess.list);
             pManager.AddIntegerParameter("QuadTree Cell Capacity", "CC", "", GH_ParamAccess.item,150);
 
         }
@@ -37,8 +40,8 @@ namespace ART_MACHINE.Components
         /// </summary>
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddCurveParameter("Polylines", "PL", "", GH_ParamAccess.list);
-            pManager.AddRectangleParameter("Rect", "R", "", GH_ParamAccess.list);
+            pManager.AddGeometryParameter("OutputGeomerty", "Geo_Out", "", GH_ParamAccess.list);
+            pManager.AddRectangleParameter("QuadTree", "QT", "", GH_ParamAccess.list);
 
         }
 
@@ -49,47 +52,58 @@ namespace ART_MACHINE.Components
         protected override void SolveInstance(IGH_DataAccess DA)
         {
 
-            List<Curve> inputCurves = new List<Curve>();
-            if (!DA.GetDataList<Curve>(0, inputCurves)) { return; }
+            List<IGH_GeometricGoo> inputGeo = new List<IGH_GeometricGoo>();
+            if (!DA.GetDataList<IGH_GeometricGoo>(0, inputGeo)) { return; }
 
             int QT_Capacity = 10;
             DA.GetData<int>(1, ref QT_Capacity);
 
 
-            List<Polyline> polylines = new List<Polyline>();
+            //List<Polyline> polylines = new List<Polyline>();
             List<Point3d> points_ForBB = new List<Point3d>();
-            foreach (Curve curve in inputCurves)
+
+
+
+            foreach (IGH_GeometricGoo goo in inputGeo)
             {
-                Polyline polyline = new Polyline();
-                if (!curve.TryGetPolyline(out polyline)) { AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Not PL"); }
-                polylines.Add(polyline);
+                if (goo == null) continue;
 
-                foreach (Point3d pl in polyline)
+                Point3d point;
+                Curve c = goo.ToCurve();
+
+                if (c != null)
                 {
-                    points_ForBB.Add(pl);
-
+                    //Curve c = GHc.Value;
+                    points_ForBB.Add(c.PointAtStart);
+                    points_ForBB.Add(c.PointAtEnd);
+                }
+                else if (goo.CastTo<Point3d>(out point))
+                {
+                    points_ForBB.Add(point);
                 }
 
             }
 
-            var boundingRectangle = new BoundingBox(points_ForBB).ToRectangle3D();
 
-            var s = Rhino.Geometry.Transform.Scale(boundingRectangle.Center, 1.01);
+            //CREATE BOUNDING RECT  AND SCALE by 2% So no rounding errors puts points outside.
+            var boundingRectangle = new BoundingBox(points_ForBB).ToRectangle3D();
+            var s = Transform.Scale(boundingRectangle.Center, 1.02);
             boundingRectangle.Transform(s);
 
 
             //CREATE THE QUADTREE
             QuadTree qt = new QuadTree(QT_Capacity, boundingRectangle);
 
-            foreach (Curve c in inputCurves)
+            foreach (IGH_GeometricGoo goo in inputGeo)
             {
-                qt.AddDrawElement(c);
+
+                qt.AddDrawElement(goo);
             }
 
 
             IEnumerable<QT_Cell> AllCells = qt.rootCell.TraverseNested(node => node.subCells);
             var bounds = QT_ClassExtentions.GetAllBoundaries(AllCells);
-            DA.SetDataList(1, bounds);
+            DA.SetDataList(1, bounds.ToList());
 
             var drawElements = qt.GetDrawElementsInDrawOrder(new Point2d(0, 0));
             //var drawCurvesSorted = drawElements.Select(x => x.GetDrawCurveInCorrectDirection()).ToList();
@@ -117,7 +131,7 @@ namespace ART_MACHINE.Components
         /// </summary>
         public override Guid ComponentGuid
         {
-            get { return new Guid("D9B2EB50-661C-4EC9-824A-E2001F4D7B06"); }
+            get { return new Guid("bb8f099a-d84f-4ba6-843a-6513788b0e02"); }
         }
     }
 }

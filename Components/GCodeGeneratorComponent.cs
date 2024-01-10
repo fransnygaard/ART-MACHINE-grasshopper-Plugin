@@ -24,7 +24,7 @@ namespace ART_MACHINE
         /// new tabs/panels will automatically be created.
         /// </summary>
         public GCodeGeneratorComponent()
-          : base("ART+MACHINE: G-Code CURVES", "G-Code CURVES",
+          : base("ART+MACHINE: G-Code CURVES (OLD)", "G-Code (OLD)",
               "Description",
               "ART+MACHINE", "Gcode")
         {
@@ -335,7 +335,7 @@ namespace ART_MACHINE
             DA.SetDataList(0, debug);
             DA.SetDataList(1, debugStr);
             DA.SetDataList(2, gcode.GetToolPath());
-            DA.SetData(3, gcode.OutputText());
+            DA.SetData(3, gcode.GetOutputGcodeAsText());
 
 
 

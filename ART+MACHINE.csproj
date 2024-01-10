@@ -54,16 +54,15 @@
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Components\BetaTestComponenet.cs" />
-    <Compile Include="Components\CurvesPreprocessorComponent.cs" />
-    <Compile Include="Components\DotDrawingGcodeGeneratorComponent.cs" />
-    <Compile Include="A+M-ClassLib\G-Code.cs" />
+    <Compile Include="AM_ClassLib\InputProsessor.cs" />
+    <Compile Include="Components\ToolpathOptimizerComponent.cs" />
+    <Compile Include="AM_ClassLib\G-Code.cs" />
     <Compile Include="Components\GCodeGeneratorComponent.cs" />
-    <Compile Include="Components\GcodeGeneratorSimplefiedComponent.cs" />
+    <Compile Include="Components\GcodeGeneratorSimplifiedComponent.cs" />
     <Compile Include="Constants\AM_Constants.cs" />
     <Compile Include="G-Code GeneratorInfo.cs" />
     <Compile Include="Components\GcodeGenerator_from_3D_SlicedCurves.cs" />
-    <Compile Include="A+M-ClassLib\GCode_3d.cs" />
+    <Compile Include="AM_ClassLib\GCode_3d.cs" />
     <Compile Include="Components\PaperOutlineComponent.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Components\WriteTextToFileComponent.cs" />

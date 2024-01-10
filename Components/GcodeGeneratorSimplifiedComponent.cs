@@ -3,16 +3,18 @@ using System.Collections.Generic;
 using ART_MACHINE.Constants;
 using Grasshopper.Kernel;
 using Rhino.Geometry;
+using ART_MACHINE.AM_ClassLib;
+using Grasshopper.Kernel.Types;
 
 namespace ART_MACHINE.Components
 {
-    public class GcodeGeneratorSimplefiedComponent : GH_GeneralClassLibrary.UI.GH_MyExtendableComponent
+    public class GcodeGeneratorSimplifiedComponent : GH_GeneralClassLibrary.UI.GH_MyExtendableComponent
     {
         /// <summary>
-        /// Initializes a new instance of the GcodeGeneratorSimplefiedComponent class.
+        /// Initializes a new instance of the GcodeGeneratorSimplifiedComponent class.
         /// </summary>
-        public GcodeGeneratorSimplefiedComponent()
-          : base("ART+MACHINE: G-Code SIMPLEFIED", "G-Code CURVES",
+        public GcodeGeneratorSimplifiedComponent()
+          : base("ART+MACHINE: G-Code Simplified", "G-Code CURVES",
               "Description",
               "ART+MACHINE", "Gcode")
         {
@@ -24,7 +26,8 @@ namespace ART_MACHINE.Components
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
             pManager.AddGeometryParameter(AM_Constants.InputGeo, "Geo", "", GH_ParamAccess.list);
-            pManager.AddNumberParameter(AM_Constants.LineRegenTolerance, "T", "Tolerance curve->lines", GH_ParamAccess.item, 0.1);
+            pManager.AddNumberParameter(AM_Constants.LineTolerance, "T", "Tolerance curve->polyline", GH_ParamAccess.item, 0.1);
+            pManager.AddNumberParameter(AM_Constants.LineAngleTolerance, "aT", "AngleTolerance in radians curve->polyline", GH_ParamAccess.item, 0.0); 
             pManager.AddIntegerParameter(AM_Constants.FeedratePenDown, "F_down", "The feedrate in XY when the pen i down", GH_ParamAccess.item, 5000);
             pManager.AddIntegerParameter(AM_Constants.FeedratePenUp, "F_up", "The feedrate in XY when the pen i up", GH_ParamAccess.item, 8000);
             pManager.AddIntegerParameter(AM_Constants.FeedRateZ, "F_Z", "The feedrate in Z", GH_ParamAccess.item, 1000);
@@ -58,14 +61,15 @@ namespace ART_MACHINE.Components
 
             //
             //INPUT Variables
-            double lineRegenTolerance = 2;
+            double lineTolerance = 0.1;
+            double lineAngleTolerance = 0.1;
             double penLiftHeight = 2;
             double penLiftTolerance = 0.1;
             int feedRateUP = 1000;
             int feedRateDOWN = 1000;
             int feedRateZ = 1000;
 
-            List<GeometryBase> inputGeo = new List<GeometryBase>();
+            List<IGH_GeometricGoo> inputGeo = new List<IGH_GeometricGoo>();
             
 
             //OUTPUT Variables
@@ -73,9 +77,10 @@ namespace ART_MACHINE.Components
 
 
             //Handle Component inputs
-            if (!DA.GetDataList<GeometryBase>(inputParams[AM_Constants.InputGeo], inputGeo)) {return;}
+            if (!DA.GetDataList<IGH_GeometricGoo>(inputParams[AM_Constants.InputGeo], inputGeo)) {return;}
 
-            DA.GetData(inputParams[AM_Constants.LineRegenTolerance], ref lineRegenTolerance);
+            DA.GetData(inputParams[AM_Constants.LineTolerance], ref lineTolerance);
+            DA.GetData(inputParams[AM_Constants.LineAngleTolerance], ref lineAngleTolerance);
             DA.GetData(inputParams[AM_Constants.FeedratePenDown], ref feedRateDOWN);
             DA.GetData(inputParams[AM_Constants.FeedratePenUp], ref feedRateUP);
             DA.GetData(inputParams[AM_Constants.FeedRateZ], ref feedRateZ);
@@ -87,17 +92,17 @@ namespace ART_MACHINE.Components
 
             //SOLVE!
             G_Code gcode = new G_Code(feedRateUP, feedRateDOWN, feedRateZ, penLiftHeight, 0, 50);
-
-
-            //Per item in for loop
-            //sort point and curves
-                //if curve 
-                    //Redu,.mnb vcce to polyline
-            //Create gcode lines
+            gcode.penLiftToleranceSqr = penLiftTolerance * penLiftTolerance;
+            double divideDistance = lineTolerance / 2;
 
 
 
+            gcode.processAllInputs(inputGeo,lineTolerance, lineAngleTolerance);
 
+
+
+            DA.SetDataList(outputParams[AM_Constants.ToolPath], gcode.GetToolPath());
+            DA.SetData(outputParams[AM_Constants.Gcode], gcode.GetOutputGcodeAsText());
 
 
 

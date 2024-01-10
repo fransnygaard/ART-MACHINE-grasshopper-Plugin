@@ -9,7 +9,9 @@ namespace ART_MACHINE.Constants
     internal static class AM_Constants
     {
         readonly public static string InputGeo = "Input Geo";
-        readonly public static string LineRegenTolerance = "LineRegenTolerance";
+        readonly public static string LineTolerance = "LineTolerance";
+        readonly public static string LineAngleTolerance = "LineAngleTolerance";
+
         readonly public static string FeedratePenDown = "FeedratePenDown";
         readonly public static string FeedratePenUp = "FeedratePenUp";
         readonly public static string PenLiftHeigt = "PenLiftHeigt";

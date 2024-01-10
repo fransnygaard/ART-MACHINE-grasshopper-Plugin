@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using GH_GeneralClassLibrary.Utils;
+using Rhino.Geometry;
 
 namespace ART_MACHINE
 {
@@ -12,6 +13,7 @@ namespace ART_MACHINE
     public struct G_Code_Line
     {
         int code;
+        static int desimalPression = 2;
 
         List<String> parameters;
 
@@ -57,7 +59,7 @@ namespace ART_MACHINE
             parameters.Add(str);
         }
 
-
+        [Obsolete]
         public G_Code_Line(Rhino.Geometry.Point3d point, int Feedrate = int.MinValue)
         {
             code = 1;
@@ -74,7 +76,7 @@ namespace ART_MACHINE
 
 
         }
-
+        [Obsolete]
         public G_Code_Line(Rhino.Geometry.Point3d point, double extruder, int Feedrate = int.MinValue)
         {
             code = 1;
@@ -97,18 +99,15 @@ namespace ART_MACHINE
         {
             code = 1;
             parameters = new List<String>();
-            AddParameter("X", point.X);
-            AddParameter("Y", point.Y);
+            AddParameter("X", Math.Round(point.X,desimalPression));
+            AddParameter("Y", Math.Round(point.Y,desimalPression));
 
 
             if (Feedrate != int.MinValue)
                 AddParameter("F", Feedrate);
-
-
-
         }
 
-        public G_Code_Line(Double Z)
+        public G_Code_Line(double Z)
         {
             code = 1;
             parameters = new List<String>();
@@ -119,7 +118,7 @@ namespace ART_MACHINE
 
         }
 
-        public G_Code_Line(Double Z, int _feedRateZ)
+        public G_Code_Line(double Z, int _feedRateZ)
         {
             code = 1;
             parameters = new List<String>();
@@ -208,14 +207,22 @@ namespace ART_MACHINE
 
         List<G_Code_Line> lines;
 
-        Double penLiftHeight;
-        Double penZeroZ;
+        double penLiftHeight;
+        double penZeroZ;
+        public double penLiftToleranceSqr = 0.1 * 0.1;
 
         int feedRateZ;
         int feedRateUP;
         int feedRateDOWN;
         List<Rhino.Geometry.Point3d> toolPath;
         bool IsLifted = true;
+
+        bool isNewPointInLiftDistance(Point3d next)
+        {
+            return next.DistanceToSquared2d(toolPath[toolPath.Count - 1]) > penLiftToleranceSqr;
+
+        }
+
 
         private Double feedrate()
         {
@@ -267,6 +274,10 @@ namespace ART_MACHINE
             if (IsLifted)
             {
                 lines.Add(new G_Code_Line(penZeroZ, feedRateZ));
+                toolPath.Add(new Rhino.Geometry.Point3d(
+                    toolPath[toolPath.Count - 1].X,
+                    toolPath[toolPath.Count - 1].Y,
+                    penZeroZ));
             }
             IsLifted = false;
         }
@@ -302,13 +313,27 @@ namespace ART_MACHINE
 
         }
 
-        public void AddNextLinePoint(Rhino.Geometry.Point2d point)
+        public void AddNextLinePoint(Point2d point)
         {
-
-
             toolPath.Add(new Rhino.Geometry.Point3d(point.X, point.Y, IsLifted ? penLiftHeight : penZeroZ));
             lines.Add(new G_Code_Line(point, IsLifted ? feedRateUP : feedRateDOWN));
+        }
 
+        public void AddPolylineMove(Polyline pl)
+        {
+            if (isNewPointInLiftDistance(pl.First))
+            {
+                LiftPen();
+            }
+            // move to first point
+            foreach (var p in pl)
+            {
+                AddNextLinePoint(p.ToPoint2d());
+
+                if (IsLifted) // LOWER PEN ON FIRST POINT 
+                    if(p == pl.First)
+                        LowerPen();
+            }
         }
 
         public void AddArcMove(Rhino.Geometry.Point2d centerPoint, Rhino.Geometry.Point2d midpoint, Rhino.Geometry.Point2d startPoint, Rhino.Geometry.Point2d endPoint, Rhino.Geometry.Arc arc, bool penLift = true)
@@ -404,6 +429,10 @@ namespace ART_MACHINE
 
         public void AddDotMove(Rhino.Geometry.Point2d point)
         {
+            if (isNewPointInLiftDistance(point.ToPoint3d()))
+            {
+                LiftPen();
+            }
             AddNextLinePoint(point);
             LowerPen();
             LiftPen();
@@ -451,46 +480,47 @@ namespace ART_MACHINE
         {
 
 
-            lines.Add(new G_Code_Line(";AddStartupCode()")); //
-
             lines.Add(new G_Code_Line(";G-Code from Grasshopper plugin version " + GetAssemblyFileVersion()));
 
-
-            lines.Add(new G_Code_Line(penLiftHeight, feedRateZ));
-            IsLifted = true;
-
-
             lines.Add(new G_Code_Line("G21 (Millimeter Units)")); //G21 - Millimeter Units
-                                                                  //lines.Add(new G_Code_Line("G17 ; XY workspace")); //G17, G18, G19 - CNC Workspace Planes   G17 = xy
-                                                                  //lines.Add(new G_Code_Line("G90 (Absolute Positioning)")); //G90 - Absolute Positioning
-                                                                  //lines.Add(new G_Code_Line("G92  X 0 Y( Set Position)")); //G92 - Set Position
-                                                                  //lines.Add(new G_Code_Line("M92  X 80 Y 80 Z 80 (set Axis Steps-per-unit)")); // M92 Set Axis Steps-per-unit
-                                                                  //lines.Add(new G_Code_Line("M201  X 3000 Y 3000 Z 3000 (  Set Print Max Acceleration)")); // M201 - Set Print Max Acceleration
-                                                                  //lines.Add(new G_Code_Line($"M203  X {feedRate} Y {feedRate} Z {feedRate} ( Set Max Feedrate)")); // M203 - Set Max Feedrate
+            //lines.Add(new G_Code_Line("G17 ; XY workspace")); //G17, G18, G19 - CNC Workspace Planes   G17 = xy
+            //lines.Add(new G_Code_Line("G90 (Absolute Positioning)")); //G90 - Absolute Positioning
+            //lines.Add(new G_Code_Line("G92  X 0 Y( Set Position)")); //G92 - Set Position
+            //lines.Add(new G_Code_Line("M92  X 80 Y 80 Z 80 (set Axis Steps-per-unit)")); // M92 Set Axis Steps-per-unit
+            //lines.Add(new G_Code_Line("M201  X 3000 Y 3000 Z 3000 (  Set Print Max Acceleration)")); // M201 - Set Print Max Acceleration
+            //lines.Add(new G_Code_Line($"M203  X {feedRate} Y {feedRate} Z {feedRate} ( Set Max Feedrate)")); // M203 - Set Max Feedrate
 
-            lines.Add(new G_Code_Line(";/AddStartupCode()")); //
+            lines.Add(new G_Code_Line(";/ StartupCode END")); //
 
             lines.Add(new G_Code_Line(" ")); // Blank Line
+            lines.Add(new G_Code_Line(" ")); // Blank Line
 
-            LiftPen();
+            lines.Add(new G_Code_Line("G1 Z" + penLiftHeight * 5 + " F" + feedRateZ + "(LIFT up 5x )")); // M0 go to location , , home.
+            IsLifted = true;
+
+            lines.Add(new G_Code_Line("")); // Blank Line
+            lines.Add(new G_Code_Line("(----START DRAWING----)")); // Blank Line
+
         }
 
         public void AddShutdownCode()
         {
-            lines.Add(new G_Code_Line(";AddShutdownCode()")); // Blank Line
 
-            LiftPen();
+            lines.Add(new G_Code_Line("(----END DRAWING----)")); //
+            lines.Add(new G_Code_Line(" ")); // Blank Line
+                               
+            lines.Add(new G_Code_Line("G1 Z" + penLiftHeight * 5 + " F" + feedRateZ + "(LIFT up 5x )")); // M0 go to location , , home.
+            IsLifted = true;
 
-            lines.Add(new G_Code_Line("G1 Z" + penLiftHeight * 5 + " F" + feedRateZ + "(LIFT up 5x)")); // M0 go to location , , home.
             lines.Add(new G_Code_Line("G1 X0 Y0 F" + feedRateUP + "(Move Home)")); // M0 go to location , , home.
             //lines.Add(new G_Code_Line("M84 (Motors off)")); // M84 Motors off.
             lines.Add(new G_Code_Line(";END G-code"));
 
-            lines.Add(new G_Code_Line(";/AddShutdownCode()")); // Blank Line
+            //lines.Add(new G_Code_Line(" ")); // Blank Line
 
         }
 
-        public String OutputText()
+        public String GetOutputGcodeAsText()
         {
             String rtnString = "";
 
