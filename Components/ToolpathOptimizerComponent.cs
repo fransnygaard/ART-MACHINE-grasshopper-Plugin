@@ -69,9 +69,11 @@ namespace ART_MACHINE.Components
                 if (goo == null) continue;
 
                 Point3d point;
-                Curve c = goo.ToCurve();
+                Curve c = default;
 
-                if (c != null)
+                //Curve c = goo.ToCurve();
+                // if (c != null)
+                if (GH_Convert.ToCurve(goo, ref c, GH_Conversion.Both))
                 {
                     //Curve c = GHc.Value;
                     points_ForBB.Add(c.PointAtStart);

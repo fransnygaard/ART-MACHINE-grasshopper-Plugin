@@ -25,6 +25,7 @@ namespace ART_MACHINE.Components
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
+            
             pManager.AddGeometryParameter(AM_Constants.InputGeo, "Geo", "", GH_ParamAccess.list);
             pManager.AddNumberParameter(AM_Constants.LineTolerance, "T", "Tolerance curve->polyline", GH_ParamAccess.item, 0.1);
             pManager.AddNumberParameter(AM_Constants.LineAngleTolerance, "aT", "AngleTolerance in radians curve->polyline", GH_ParamAccess.item, 0.0); 

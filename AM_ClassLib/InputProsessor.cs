@@ -1,4 +1,5 @@
 ﻿using GH_GeneralClassLibrary.Utils;
+using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
 using Rhino.Geometry;
 using System;
@@ -58,10 +59,11 @@ namespace ART_MACHINE.AM_ClassLib
             {
                 if (geo == null) continue;
 
-                Curve crv = geo.ToCurve();
+                Curve crv = default;
+                
                 Point3d point;
 
-                if (crv != null)
+                if (GH_Convert.ToCurve(geo, ref crv, GH_Conversion.Both))
                 {
                     drawGeo.Add(new DrawGeo(crv));
                 }
