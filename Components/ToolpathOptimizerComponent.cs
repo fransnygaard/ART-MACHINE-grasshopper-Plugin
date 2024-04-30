@@ -32,6 +32,8 @@ namespace ART_MACHINE.Components
         {
             pManager.AddGeometryParameter("InputGeomerty", "Geo", "", GH_ParamAccess.list);
             pManager.AddIntegerParameter("QuadTree Cell Capacity", "CC", "", GH_ParamAccess.item,150);
+            pManager.AddBooleanParameter("AlowFlipCurves", "AlloFlip", "", GH_ParamAccess.item, true);
+            pManager.AddNumberParameter("RemoveShortCurvesThreshold", "RemoveShort", "", GH_ParamAccess.item, 0.01);
 
         }
 
@@ -58,6 +60,11 @@ namespace ART_MACHINE.Components
             int QT_Capacity = 10;
             DA.GetData<int>(1, ref QT_Capacity);
 
+            bool AlowFlipCurves = true;
+            DA.GetData<bool>(2, ref AlowFlipCurves);
+
+            double removeShortCurvesThreshold = 0.01;
+            DA.GetData<double>(3, ref removeShortCurvesThreshold);
 
             //List<Polyline> polylines = new List<Polyline>();
             List<Point3d> points_ForBB = new List<Point3d>();
@@ -69,6 +76,8 @@ namespace ART_MACHINE.Components
                 if (goo == null) continue;
 
                 Point3d point;
+                Point2d point2d;
+
                 Curve c = default;
 
                 //Curve c = goo.ToCurve();
@@ -76,12 +85,17 @@ namespace ART_MACHINE.Components
                 if (GH_Convert.ToCurve(goo, ref c, GH_Conversion.Both))
                 {
                     //Curve c = GHc.Value;
+                    if (c.GetLength() <= removeShortCurvesThreshold) continue;
                     points_ForBB.Add(c.PointAtStart);
                     points_ForBB.Add(c.PointAtEnd);
                 }
                 else if (goo.CastTo<Point3d>(out point))
                 {
                     points_ForBB.Add(point);
+                }
+                else if (goo.CastTo<Point2d>(out point2d))
+                {
+                    points_ForBB.Add(point2d.ToPoint3d());
                 }
 
             }
@@ -99,7 +113,7 @@ namespace ART_MACHINE.Components
             foreach (IGH_GeometricGoo goo in inputGeo)
             {
 
-                qt.AddDrawElement(goo);
+                qt.AddDrawElement(goo, removeShortCurvesThreshold);
             }
 
 
@@ -107,7 +121,7 @@ namespace ART_MACHINE.Components
             var bounds = QT_ClassExtentions.GetAllBoundaries(AllCells);
             DA.SetDataList(1, bounds.ToList());
 
-            var drawElements = qt.GetDrawElementsInDrawOrder(new Point2d(0, 0));
+            var drawElements = qt.GetDrawElementsInDrawOrder(new Point2d(0, 0), AlowFlipCurves);
             //var drawCurvesSorted = drawElements.Select(x => x.GetDrawCurveInCorrectDirection()).ToList();
             DA.SetDataList(0, drawElements.ToList());
         

@@ -5,15 +5,15 @@ using System.Collections.Generic;
 
 namespace ART_MACHINE
 {
-    public class GcodeGenerator_from_3D_SlicedCurves : GH_Component
+    public class GcodeGenerator_from_3D_SlicedCurves_OBSOLETE : GH_Component
     {
         /// <summary>
         /// Initializes a new instance of the GcodeGenerator_from_3D_SlicedCurves class.
         /// </summary>
-        public GcodeGenerator_from_3D_SlicedCurves()
-          : base("ART + MACHINE: G - Code extruder 3d", "G-Code Extruder",
+        public GcodeGenerator_from_3D_SlicedCurves_OBSOLETE()
+          : base("ART + MACHINE: G - Code extruder 3d(STILL IN DEVELOPMENT)", "G-Code Extruder(STILL IN DEVELOPMENT)",
               "Generates Gcode for 3d extuder",
-              "ART+MACHINE", "Gcode")
+              "ART+MACHINE", "UNDER DEVELOPMENT")
         {
         }
 

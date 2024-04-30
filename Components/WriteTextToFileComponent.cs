@@ -61,14 +61,17 @@ namespace ART_MACHINE
             DA.GetData(3, ref _fileType);
             DA.GetData(4, ref _run);
 
+            if(!_run) { return; }
 
             fullPath = _folder + _fileName + "." + _fileType;
-            ((Action)(() => { }))();
+           // ((Action)(() => { }))();
 
             File.WriteAllLines(fullPath, linesToWrite.ToArray());
 
             rtnStatus.Add("Written lines to:");
             rtnStatus.Add(fullPath);
+
+
 
             DA.SetDataList(0, rtnStatus);
 
