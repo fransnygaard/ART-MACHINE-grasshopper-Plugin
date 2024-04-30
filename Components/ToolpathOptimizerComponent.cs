@@ -32,7 +32,7 @@ namespace ART_MACHINE.Components
         {
             pManager.AddGeometryParameter("InputGeomerty", "Geo", "", GH_ParamAccess.list);
             pManager.AddIntegerParameter("QuadTree Cell Capacity", "CC", "", GH_ParamAccess.item,150);
-            pManager.AddBooleanParameter("AlowFlipCurves", "AlloFlip", "", GH_ParamAccess.item, true);
+            pManager.AddBooleanParameter("AllowFlipCurves", "AllowFlip", "", GH_ParamAccess.item, true);
             pManager.AddNumberParameter("RemoveShortCurvesThreshold", "RemoveShort", "", GH_ParamAccess.item, 0.01);
 
         }

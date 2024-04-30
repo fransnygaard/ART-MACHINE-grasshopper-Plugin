@@ -65,8 +65,8 @@ namespace ART_MACHINE.AM_ClassLib
 
                 if (GH_Convert.ToCurve(geo, ref crv, GH_Conversion.Both))
                 {
-                    if(crv.GetLength() > 0.05)
-                        drawGeo.Add(new DrawGeo(crv));
+                    if(crv.GetLength() > 0.001)
+                    drawGeo.Add(new DrawGeo(crv));
                 }
                 else if (geo.CastTo<Point3d>(out point))
                 {
